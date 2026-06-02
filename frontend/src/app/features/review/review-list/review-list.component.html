@@ -1,0 +1,278 @@
+<div class="space-y-8">
+  
+  <!-- Review Stats Overview Card -->
+  <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-8 shadow-sm">
+    <h3 class="text-xl font-black text-slate-900 mb-6 tracking-tight">Đánh giá từ cộng đồng</h3>
+    
+    @if (isLoadingStats()) {
+      <div class="flex justify-center py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent"></div>
+      </div>
+    } @else if (stats()) {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        
+        <!-- Left Column: Avg Score & CTAs -->
+        <div class="text-center md:text-left space-y-4">
+          <div class="inline-block md:block">
+            <span class="text-5xl font-black text-slate-900 tracking-tight leading-none">
+              {{ stats()?.avgOverall }}
+            </span>
+            <span class="text-lg font-bold text-slate-400">/ 5</span>
+          </div>
+          
+          <!-- Rating Stars -->
+          <div class="flex justify-center md:justify-start text-2xl text-amber-400">
+            @for (star of [1,2,3,4,5]; track star) {
+              <span>{{ stats()!.avgOverall >= star ? '★' : '☆' }}</span>
+            }
+          </div>
+
+          <p class="text-xs text-slate-400 font-bold block">
+            Dựa trên {{ stats()?.totalCount }} bài đánh giá thực tế
+          </p>
+
+          <button 
+            (click)="isAuthenticated() ? showWriteModal.set(true) : alertNeedLogin()"
+            class="w-full md:w-auto rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white font-bold text-xs px-6 py-3 shadow-md hover:shadow-lg transition duration-300"
+          >
+            Viết đánh giá của bạn
+          </button>
+        </div>
+
+        <!-- Middle Column: Distribution Bars -->
+        <div class="space-y-2">
+          @for (star of [5,4,3,2,1]; track star) {
+            <div 
+              (click)="filterByRating(star)"
+              [class.active-rating-filter]="selectedRating() === star"
+              class="flex items-center gap-3 text-xs font-bold text-slate-600 cursor-pointer p-1.5 rounded-xl hover:bg-slate-50 transition"
+            >
+              <span class="w-10 whitespace-nowrap text-right text-[10px] text-slate-400 uppercase tracking-wide">
+                {{ star }} sao
+              </span>
+              
+              <!-- Progress Bar Track -->
+              <div class="flex-grow bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
+                <div 
+                  class="bg-gradient-to-r from-cyan-400 to-indigo-400 h-full rounded-full transition-all duration-500"
+                  [style.width.%]="getStarPercentage(star)"
+                ></div>
+              </div>
+
+              <span class="w-8 text-right text-slate-400">
+                {{ getStarPercentage(star) }}%
+              </span>
+            </div>
+          }
+        </div>
+
+        <!-- Right Column: Sub-criteria Averages -->
+        <div class="space-y-4 border-t md:border-t-0 md:border-l border-slate-150 pt-6 md:pt-0 md:pl-8">
+          <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Tiêu chí chi tiết</h4>
+          
+          <!-- Cleanliness Criteria -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs font-bold text-slate-700">
+              <span>Sạch sẽ & Vệ sinh</span>
+              <span class="text-cyan-600">{{ stats()?.avgCleanliness }} / 5</span>
+            </div>
+            <div class="bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div 
+                class="bg-cyan-400 h-full rounded-full" 
+                [style.width.%]="getCleanlinessPercentage()"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Service Criteria -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs font-bold text-slate-700">
+              <span>Chất lượng phục vụ</span>
+              <span class="text-indigo-600">{{ stats()?.avgService }} / 5</span>
+            </div>
+            <div class="bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div 
+                class="bg-indigo-400 h-full rounded-full" 
+                [style.width.%]="getServicePercentage()"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <!-- Review List Section -->
+  <div class="space-y-4">
+    <div class="flex justify-between items-center px-4">
+      <h3 class="text-lg font-black text-slate-900 tracking-tight">
+        Đánh giá của khách hàng ({{ totalCount() }})
+      </h3>
+      
+      @if (selectedRating()) {
+        <button 
+          (click)="filterByRating(selectedRating()!)"
+          class="text-xs font-bold text-cyan-600 hover:text-cyan-700 hover:underline flex items-center gap-1 transition"
+        >
+          <span>Đang lọc {{ selectedRating() }} sao</span>
+          <span class="text-slate-400 text-[10px] font-normal uppercase tracking-wider">(Xóa lọc)</span>
+        </button>
+      }
+    </div>
+
+    <!-- Review Cards Loop -->
+    @if (isLoading() && reviews().length === 0) {
+      <div class="flex flex-col items-center py-12 bg-white rounded-[2.5rem] border border-slate-200/60">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent mb-3"></div>
+        <p class="text-slate-400 font-bold text-xs">Đang tải danh sách đánh giá...</p>
+      </div>
+    } @else if (reviews().length === 0) {
+      <div class="text-center py-16 bg-white rounded-[2.5rem] border border-slate-200/60 text-slate-400 text-xs font-bold">
+        Chưa có đánh giá nào cho địa điểm này.
+      </div>
+    } @else {
+      <div class="space-y-4">
+        @for (review of reviews(); track review.id) {
+          <div class="rounded-[2.5rem] border border-slate-200/60 bg-white p-6 md:p-8 hover:border-slate-350/80 transition duration-300 shadow-sm relative overflow-hidden">
+            
+            <!-- Overall score badge on the top right -->
+            <div class="absolute top-6 right-6 md:right-8 bg-cyan-50/80 border border-cyan-100 rounded-full px-3 py-1 text-[10px] font-black text-cyan-600 tracking-wide uppercase select-none flex items-center gap-0.5">
+              <span>★ {{ review.ratingOverall }}</span>
+            </div>
+
+            <!-- Card Header -->
+            <div class="flex items-start gap-4 mb-4">
+              <!-- User Avatar -->
+              <div class="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100 flex-shrink-0">
+                @if (review.user.avatarUrl) {
+                  <img [src]="review.user.avatarUrl" alt="Avatar" class="h-full w-full object-cover">
+                } @else {
+                  <div class="h-full w-full bg-slate-200 text-sm font-black text-slate-500 flex items-center justify-center">
+                    {{ review.user.fullName.charAt(0) }}
+                  </div>
+                }
+              </div>
+
+              <!-- User details -->
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <h4 class="text-xs font-black text-slate-800 leading-none">
+                    {{ review.user.fullName }}
+                  </h4>
+                  <span class="bg-indigo-50 border border-indigo-100 text-[8px] font-black text-indigo-500 uppercase tracking-widest px-2 py-0.5 rounded-full">
+                    Cấp {{ review.user.userLevel }}
+                  </span>
+                </div>
+                
+                <div class="flex items-center gap-2 text-[9px] text-slate-400 font-bold">
+                  <span>{{ review.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  <span>•</span>
+                  <span>Sạch sẽ: {{ review.ratingCleanliness }}★</span>
+                  <span>•</span>
+                  <span>Dịch vụ: {{ review.ratingService }}★</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="space-y-3 pl-0 md:pl-14">
+              <h5 class="text-sm font-black text-slate-800 tracking-tight leading-snug">
+                {{ review.title }}
+              </h5>
+              <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                {{ review.content }}
+              </p>
+
+              <!-- Uploaded Media Thumbnails -->
+              @if (review.media && review.media.length > 0) {
+                <div class="flex flex-wrap gap-2 pt-2">
+                  @for (m of review.media; track m.id) {
+                    <div 
+                      (click)="openLightbox(m.url, m.type)"
+                      class="h-16 w-16 rounded-2xl border border-slate-200 overflow-hidden cursor-pointer relative group flex-shrink-0"
+                    >
+                      @if (m.type === 'VIDEO') {
+                        <video [src]="m.url" class="h-full w-full object-cover"></video>
+                        <div class="absolute inset-0 bg-slate-900/30 flex items-center justify-center transition group-hover:bg-slate-900/40">
+                          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"></path>
+                          </svg>
+                        </div>
+                      } @else {
+                        <img [src]="m.url" alt="Review Media" class="h-full w-full object-cover transition group-hover:scale-105" />
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Card Footer (Likes interaction) -->
+            <div class="flex justify-between items-center pl-0 md:pl-14 mt-6 pt-4 border-t border-slate-100">
+              <button 
+                (click)="toggleLike(review)"
+                [class.text-rose-500]="review.isLiked"
+                [class.text-slate-400]="!review.isLiked"
+                class="like-btn flex items-center gap-1.5 text-xs font-bold transition focus:outline-none"
+              >
+                <svg 
+                  [class.fill-current]="review.isLiked"
+                  class="w-4 h-4 transition duration-300"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                <span>Hữu ích ({{ review.likesCount }})</span>
+              </button>
+            </div>
+
+          </div>
+        }
+
+        <!-- Pagination Load More button -->
+        @if (totalCount() > reviews().length) {
+          <div class="text-center pt-4">
+            <button 
+              (click)="loadMore()"
+              [disabled]="isLoading()"
+              class="rounded-2xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 font-bold text-xs px-6 py-3 shadow-sm transition disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              @if (isLoading()) {
+                <div class="h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-transparent"></div>
+              }
+              <span>Xem thêm bài đánh giá</span>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Write Review Modal Overlay -->
+@if (showWriteModal()) {
+  <app-write-review-modal 
+    [placeId]="placeId"
+    (close)="showWriteModal.set(false)"
+    (submitted)="onReviewSubmitted()"
+  ></app-write-review-modal>
+}
+
+<!-- Lightbox Modal Overlay -->
+@if (activeLightboxMedia()) {
+  <div class="lightbox-overlay" (click)="closeLightbox()">
+    <button class="lightbox-close-btn" (click)="closeLightbox()">
+      ✕
+    </button>
+    <div class="lightbox-content-wrapper" (click)="$event.stopPropagation()">
+      @if (activeLightboxType() === 'VIDEO') {
+        <video [src]="activeLightboxMedia()" controls autoplay class="max-h-[85vh] max-w-[90vw] rounded-2xl shadow-2xl"></video>
+      } @else {
+        <img [src]="activeLightboxMedia()" alt="Enlarged media" class="max-h-[85vh] max-w-[90vw] rounded-2xl shadow-2xl" />
+      }
+    </div>
+  </div>
+}

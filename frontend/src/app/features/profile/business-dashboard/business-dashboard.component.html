@@ -1,0 +1,257 @@
+<div class="business-portal-container max-w-6xl mx-auto py-4 font-sans">
+  <!-- Loading state -->
+  <div *ngIf="isLoading()" class="flex flex-col items-center py-20">
+    <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mb-3"></div>
+    <p class="text-xs font-bold text-slate-400">Đang tải dữ liệu doanh nghiệp...</p>
+  </div>
+
+  <div *ngIf="!isLoading()" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Left Column: Owned Listings & Claim Listing Form (1 column) -->
+    <div class="lg:col-span-1 space-y-6">
+      
+      <!-- Owned Listings Card -->
+      <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm">
+        <h3 class="text-base font-black text-slate-800 mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-indigo-600">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+          </svg>
+          Địa điểm sở hữu ({{ ownedPlaces().length }})
+        </h3>
+
+        <div *ngIf="ownedPlaces().length === 0" class="text-center py-6">
+          <p class="text-xs font-bold text-slate-400">Bạn chưa sở hữu địa điểm nào.</p>
+        </div>
+
+        <div *ngIf="ownedPlaces().length > 0" class="space-y-2">
+          <button 
+            *ngFor="let place of ownedPlaces()" 
+            (click)="selectPlace(place)"
+            class="w-full text-left p-3.5 rounded-2xl border transition-all duration-300 flex items-center justify-between active:scale-98"
+            [ngClass]="{
+              'bg-indigo-50/50 border-indigo-200 text-indigo-750 font-black shadow-inner': selectedPlace()?.id === place.id,
+              'bg-slate-50/50 border-slate-100 text-slate-700 hover:bg-slate-100/50': selectedPlace()?.id !== place.id
+            }"
+          >
+            <div>
+              <span class="text-xs font-black block leading-snug">{{ place.name }}</span>
+              <span class="text-[10px] text-slate-400 font-medium block mt-0.5">{{ place.address }}</span>
+            </div>
+            <svg *ngIf="selectedPlace()?.id === place.id" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-indigo-600 flex-shrink-0">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Claim Listing Card -->
+      <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm">
+        <h3 class="text-base font-black text-slate-800 mb-2 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-cyan-600">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+          </svg>
+          Đăng ký sở hữu địa điểm
+        </h3>
+        <p class="text-[10px] text-slate-400 font-semibold mb-4 leading-normal">
+          Hãy chọn địa điểm của bạn và tải lên tài liệu đăng ký kinh doanh để được xác nhận quyền sở hữu listing.
+        </p>
+
+        <form [formGroup]="claimForm" (ngSubmit)="submitClaim()" class="space-y-4">
+          <!-- Place selection dropdown -->
+          <div class="space-y-1">
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Chọn địa điểm chưa có chủ</label>
+            <select 
+              formControlName="placeId"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold cursor-pointer"
+            >
+              <option value="" disabled selected>-- Chọn địa điểm từ hệ thống --</option>
+              <option *ngFor="let place of unclaimedPlaces()" [value]="place.id">
+                {{ place.name }} ({{ place.address }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Drag and Drop upload area -->
+          <div class="space-y-1">
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Tài liệu xác minh (GPKD)</label>
+            <div 
+              class="drag-drop-zone rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-all duration-300 relative overflow-hidden"
+              [ngClass]="{
+                'border-indigo-400 bg-indigo-50/20 scale-[0.99]': dragOver,
+                'border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-slate-50': !dragOver
+              }"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event)"
+              (click)="fileInput.click()"
+            >
+              <input 
+                #fileInput 
+                type="file" 
+                (change)="onFileSelected($event)" 
+                class="hidden" 
+                accept="image/*,application/pdf"
+              />
+
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-8 h-8 text-indigo-500 mx-auto mb-2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+              </svg>
+
+              <span class="text-xs font-black text-slate-700 block">Kéo thả tài liệu xác minh vào đây</span>
+              <span class="text-[10px] text-slate-400 block mt-1 font-semibold">Chấp nhận tập tin ảnh JPG/PNG hoặc PDF</span>
+
+              <!-- Selected file indicator overlay -->
+              <div *ngIf="selectedFile" class="absolute inset-0 bg-white/95 flex flex-col items-center justify-center p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-emerald-500 mb-1">
+                  <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.748-5.25Z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-xs font-black text-slate-800 truncate max-w-full block px-4">{{ selectedFile.name }}</span>
+                <span class="text-[10px] text-slate-400 mt-0.5 font-bold">{{ (selectedFile.size / 1024).toFixed(1) }} KB</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div *ngIf="claimSuccess()" class="text-xs text-emerald-600 font-bold p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+            {{ claimSuccess() }}
+          </div>
+          <div *ngIf="claimError()" class="text-xs text-rose-600 font-bold p-3 bg-rose-50 rounded-xl border border-rose-100">
+            {{ claimError() }}
+          </div>
+
+          <button 
+            type="submit"
+            [disabled]="isSubmittingClaim() || claimForm.invalid || !selectedFile"
+            class="w-full rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-3.5 transition shadow active:scale-95 disabled:opacity-50"
+          >
+            {{ isSubmittingClaim() ? 'Đang tải lên và phê duyệt...' : 'Gửi Đăng ký Sở hữu' }}
+          </button>
+        </form>
+      </div>
+      
+    </div>
+
+    <!-- Right Column: Analytics Charts & Reviews response editor (2 columns) -->
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- Placeholder if no place selected -->
+      <div *ngIf="!selectedPlace()" class="bg-white rounded-[2.5rem] border border-slate-200/80 p-12 text-center shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-16 h-16 text-indigo-400 mx-auto mb-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.95 17.95 0 0 1 12 16.5c-3.11 0-6.026-.791-8.57-2.193m17.14 0c-.015.06-.03.121-.047.181m-17.14-.18C3.1 13.785 3 12.896 3 12c0-.738.089-1.454.257-2.14m0 0A17.95 17.95 0 0 1 12 10.5c3.11 0 6.026.791 8.57 2.193M3.14 10.5c-.015-.06-.03-.121-.047-.181" />
+        </svg>
+
+        <h4 class="text-xl font-black text-slate-800 mb-2">Chào mừng đến với Kênh Chủ Doanh Nghiệp (B2B)</h4>
+        <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+          Hiện tại bạn chưa sở hữu địa điểm du lịch nào. Hãy sử dụng biểu mẫu bên trái để gửi yêu cầu sở hữu một địa điểm du lịch trên hệ thống.
+        </p>
+      </div>
+
+      <!-- Main Portal display if place is selected -->
+      <div *ngIf="selectedPlace()" class="space-y-6 animate-fade-in">
+        
+        <!-- B2B Stats Header Box -->
+        <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-[2.5rem] p-8 shadow-sm relative overflow-hidden">
+          <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+          <div class="relative z-10">
+            <span class="text-[9px] font-black text-cyan-400 uppercase tracking-widest block mb-1">Business Management Portal</span>
+            <h2 class="text-2xl font-black mb-2">{{ selectedPlace()?.name }}</h2>
+            <p class="text-xs text-slate-350 flex items-center gap-1.5 font-medium">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              {{ selectedPlace()?.address }}
+            </p>
+          </div>
+        </div>
+
+        <!-- B2B Analytics Dashboard Widget -->
+        <div class="bg-white rounded-[2.5rem] border border-slate-200/80 p-8 shadow-sm">
+          <h3 class="text-base font-black text-slate-800 mb-6 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-indigo-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
+            </svg>
+            Phân tích số liệu 6 tháng gần nhất
+          </h3>
+
+          <app-analytics [data]="analyticsData()"></app-analytics>
+        </div>
+
+        <!-- Review Management Responses Block -->
+        <div class="bg-white rounded-[2.5rem] border border-slate-200/80 p-8 shadow-sm">
+          <h3 class="text-base font-black text-slate-800 mb-6 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-indigo-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l3.529-4.893a.925.925 0 0 1 .865-.501 48.17 48.17 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+            </svg>
+            Quản lý đánh giá và Phản hồi ({{ selectedPlace()?.reviews?.length || 0 }})
+          </h3>
+
+          <div *ngIf="!selectedPlace()?.reviews || selectedPlace()!.reviews.length === 0" class="text-center py-8">
+            <p class="text-xs font-bold text-slate-400">Chưa có đánh giá nào từ người dùng cho địa điểm này.</p>
+          </div>
+
+          <div *ngIf="selectedPlace()?.reviews && selectedPlace()!.reviews.length > 0" class="space-y-6">
+            <div 
+              *ngFor="let r of selectedPlace()!.reviews" 
+              class="review-card border border-slate-100 rounded-3xl p-6 bg-slate-50/20 space-y-4 hover:border-slate-200 transition-all duration-300"
+            >
+              <!-- Review Header -->
+              <div class="flex justify-between items-start gap-4">
+                <div class="flex items-center gap-3">
+                  <div class="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
+                    <img *ngIf="r.user.avatarUrl" [src]="r.user.avatarUrl" class="h-full w-full object-cover" />
+                    <div *ngIf="!r.user.avatarUrl" class="h-full w-full bg-slate-200 font-black text-slate-500 text-xs flex items-center justify-center">
+                      {{ r.user.fullName.charAt(0) }}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-black text-slate-800">{{ r.user.fullName }}</h5>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="text-cyan-600 font-extrabold text-[10px]">★ {{ r.ratingOverall }}</span>
+                      <span class="text-[9px] text-slate-400 font-bold">{{ r.createdAt | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Review Body -->
+              <div class="space-y-1">
+                <h4 class="text-xs font-black text-slate-800 leading-snug">{{ r.title }}</h4>
+                <p class="text-xs text-slate-650 leading-relaxed font-medium">{{ r.content }}</p>
+              </div>
+
+              <!-- Response display / Editor Box -->
+              <div class="pt-4 border-t border-slate-100 space-y-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Phản hồi của Ban Quản Lý</span>
+                  <span *ngIf="r.businessResponse" class="bg-emerald-55 text-emerald-600 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full select-none border border-emerald-100">
+                    ĐÃ GỬI
+                  </span>
+                </div>
+
+                <div class="space-y-2">
+                  <textarea 
+                    [(ngModel)]="responseTexts[r.id]"
+                    rows="2.5"
+                    class="glow-input w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 shadow-inner outline-none focus:border-indigo-400 focus:bg-white font-medium"
+                    placeholder="Viết phản hồi cảm ơn hoặc làm rõ đánh giá này tới khách hàng..."
+                  ></textarea>
+
+                  <div class="flex justify-end">
+                    <button 
+                      (click)="submitResponse(r.id)"
+                      [disabled]="isSavingResponse[r.id] || !responseTexts[r.id]?.trim()"
+                      class="btn-save-response text-[10px] font-black text-white bg-slate-900 hover:bg-slate-800 px-5 py-2.5 rounded-xl transition shadow active:scale-95 disabled:opacity-40"
+                    >
+                      {{ isSavingResponse[r.id] ? 'Đang lưu...' : 'Lưu Phản Hồi' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

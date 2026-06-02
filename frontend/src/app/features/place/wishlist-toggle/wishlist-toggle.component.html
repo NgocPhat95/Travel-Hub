@@ -1,0 +1,30 @@
+<div class="relative inline-block">
+  <button 
+    type="button" 
+    (click)="toggleSaved($event)"
+    [class.active]="isSaved()"
+    class="heart-btn h-10 w-10 rounded-full bg-white hover:bg-slate-50 border border-slate-200 flex items-center justify-center shadow-md text-slate-400 hover:text-rose-550 transition duration-300 relative focus:outline-none"
+  >
+    <svg 
+      [class.fill-current]="isSaved()"
+      [class.text-rose-500]="isSaved()"
+      class="w-5 h-5 transition duration-300"
+      fill="none" 
+      stroke="currentColor" 
+      viewBox="0 0 24 24"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+    </svg>
+  </button>
+
+  <!-- Particle Hearts Explosion -->
+  @for (p of particles(); track p.id) {
+    <span 
+      class="particle-heart" 
+      [style.--angle]="p.angle + 'deg'"
+      [style.color]="p.color"
+    >
+      ❤
+    </span>
+  }
+</div>

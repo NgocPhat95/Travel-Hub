@@ -1,0 +1,30 @@
+// Floating Chatbot Styles
+:host {
+  display: block;
+}
+
+// Custom Glassmorphism Box Shadow & Glow Pulse
+.shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 40px rgba(6, 182, 212, 0.05);
+}
+
+// Glowing cyan pulse ring
+button {
+  outline: none;
+}
+
+// Scrolling customize
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.2);
+  border-radius: 9999px;
+  
+  &:hover {
+    background: rgba(100, 116, 139, 0.4);
+  }
+}

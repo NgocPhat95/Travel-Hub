@@ -1,0 +1,383 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  BUSINESS_OWNER
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+enum SuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  passwordHash  String?    @map("password_hash")
+  fullName      String     @map("full_name")
+  avatarUrl     String?    @map("avatar_url")
+  coverUrl      String?    @map("cover_url")
+  role          Role       @default(USER)
+  status        UserStatus @default(ACTIVE)
+  googleId      String?    @unique @map("google_id")
+  authProvider  String     @default("EMAIL") @map("auth_provider")
+  verificationToken   String?  @map("verification_token")
+  resetPasswordToken  String?  @map("reset_password_token")
+  userLevel     Int        @default(1) @map("user_level")
+  experiencePoints Int    @default(0) @map("experience_points")
+  bio           String?    @map("bio")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  // Quan hệ
+  questions       Question[]
+  answers         Answer[]
+  editSuggestions EditSuggestion[]
+  reviews         Review[]
+  reviewLikes     ReviewLike[]
+  wishlists       Wishlist[]
+  trips           Trip[]             @relation("UserOwnedTrips")
+  collaborations  TripCollaborator[]
+  affiliateClickLogs AffiliateClickLog[]
+  ownedPlaces      Place[]            @relation("UserOwnedPlaces")
+  businessClaims   BusinessClaim[]
+  businessResponses BusinessResponse[]
+  reviewReports    ReviewReport[]
+  posts            Post[]
+  postLikes        PostLike[]
+  postComments     PostComment[]
+
+  @@map("users")
+}
+
+model Place {
+  id             String   @id @default(uuid())
+  name           String   @map("name")
+  description    String?  @map("description")
+  category       String   @map("category") // "HOTEL", "RESTAURANT", "ATTRACTION"
+  address        String   @map("address")
+  latitude       Float    @map("latitude")
+  longitude      Float    @map("longitude")
+  priceMin       Float?   @map("price_min")
+  priceMax       Float?   @map("price_max")
+  priceRange     String?  @map("price_range")
+  avgRating      Float    @default(0) @map("avg_rating")
+  ratingAverage  Float    @default(0) @map("rating_average")
+  amenities      String[] @map("amenities")
+  images         String[] @map("images")
+  isVerified     Boolean  @default(false) @map("is_verified")
+  status         String   @default("ACTIVE") @map("status")
+  avatarUrl      String?  @map("avatar_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Quan hệ
+  questions       Question[]
+  editSuggestions EditSuggestion[]
+  reviews         Review[]
+  wishlists       Wishlist[]
+  tripItems       TripItem[]
+  partnerPrices   PartnerPrice[]
+  affiliateClickLogs AffiliateClickLog[]
+  ownerId       String?        @map("owner_id")
+  owner         User?          @relation("UserOwnedPlaces", fields: [ownerId], references: [id], onDelete: SetNull)
+  businessClaims BusinessClaim[]
+  posts          Post[]
+
+  @@map("places")
+}
+
+model Question {
+  id        String   @id @default(uuid())
+  placeId   String   @map("place_id")
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @map("content")
+  createdAt DateTime @default(now()) @map("created_at")
+  answers   Answer[]
+
+  @@map("questions")
+}
+
+model Answer {
+  id         String   @id @default(uuid())
+  questionId String   @map("question_id")
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content    String   @map("content")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("answers")
+}
+
+model EditSuggestion {
+  id           String           @id @default(uuid())
+  placeId      String           @map("place_id")
+  place        Place            @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  userId       String           @map("user_id")
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  proposedData Json             @map("proposed_data")
+  status       SuggestionStatus @default(PENDING) @map("status")
+  createdAt    DateTime         @default(now()) @map("created_at")
+
+  @@map("edit_suggestions")
+}
+
+model Review {
+  id                String         @id @default(uuid())
+  placeId           String         @map("place_id")
+  place             Place          @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  userId            String         @map("user_id")
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ratingOverall     Float          @map("rating_overall")
+  ratingCleanliness Int            @map("rating_cleanliness")
+  ratingService     Int            @map("rating_service")
+  title             String         @map("title")
+  content           String         @map("content")
+  isPending         Boolean        @default(false) @map("is_pending") // default false for instant calculations in dev
+  isHidden          Boolean        @default(false) @map("is_hidden")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  media             ReviewMedia[]
+  likes             ReviewLike[]
+  businessResponse  BusinessResponse?
+  reports           ReviewReport[]
+
+  @@map("reviews")
+}
+
+model ReviewMedia {
+  id        String    @id @default(uuid())
+  reviewId  String    @map("review_id")
+  review    Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  url       String    @map("url")
+  type      MediaType @default(IMAGE) @map("type")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("review_media")
+}
+
+model ReviewLike {
+  id        String   @id @default(uuid())
+  reviewId  String   @map("review_id")
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([reviewId, userId])
+  @@map("review_likes")
+}
+
+enum CollaboratorRole {
+  VIEWER
+  EDITOR
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   String   @map("place_id")
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, placeId])
+  @@map("wishlists")
+}
+
+model Trip {
+  id          String   @id @default(uuid())
+  title       String   @map("title")
+  description String?  @map("description")
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  ownerId     String   @map("owner_id")
+  owner       User     @relation("UserOwnedTrips", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  collaborators TripCollaborator[]
+  items         TripItem[]
+  posts         Post[]
+
+  @@map("trips")
+}
+
+model TripCollaborator {
+  id     String           @id @default(uuid())
+  tripId String           @map("trip_id")
+  trip   Trip             @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  userId String           @map("user_id")
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   CollaboratorRole @default(VIEWER) @map("role")
+
+  @@unique([tripId, userId])
+  @@map("trip_collaborators")
+}
+
+model TripItem {
+  id            String   @id @default(uuid())
+  tripId        String   @map("trip_id")
+  trip          Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  placeId       String   @map("place_id")
+  place         Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  dayNumber     Int      @map("day_number")
+  sequenceOrder Int      @map("sequence_order")
+  note          String?  @map("note")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("trip_items")
+}
+
+enum PartnerName {
+  AGODA
+  BOOKING_COM
+  EXPEDIA
+}
+
+model PartnerPrice {
+  id          String      @id @default(uuid())
+  placeId     String      @map("place_id")
+  place       Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  partnerName PartnerName @map("partner_name")
+  price       Float       @map("price")
+  currency    String      @map("currency")
+  deepLink    String      @map("deep_link")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@map("partner_prices")
+}
+
+model AffiliateClickLog {
+  id          String      @id @default(uuid())
+  userId      String?     @map("user_id")
+  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  placeId     String      @map("place_id")
+  place       Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  partnerName PartnerName @map("partner_name")
+  clickedAt   DateTime    @default(now()) @map("clicked_at")
+  ipAddress   String?     @map("ip_address")
+
+  @@map("affiliate_click_logs")
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model BusinessClaim {
+  id          String      @id @default(uuid())
+  userId      String      @map("user_id")
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId     String      @map("place_id")
+  place       Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  documentUrl String      @map("document_url")
+  status      ClaimStatus @default(PENDING) @map("status")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@map("business_claims")
+}
+
+model BusinessResponse {
+  id        String   @id @default(uuid())
+  reviewId  String   @unique @map("review_id")
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @map("content")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("business_responses")
+}
+
+model ReviewReport {
+  id          String   @id @default(uuid())
+  reviewId    String   @map("review_id")
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reporterId  String   @map("reporter_id")
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reason      String   @map("reason")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("review_reports")
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @map("content")
+  placeId   String?  @map("place_id")
+  place     Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  tripId    String?  @map("trip_id")
+  trip      Trip?    @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  images    PostImage[]
+  likes     PostLike[]
+  comments  PostComment[]
+
+  @@map("posts")
+}
+
+model PostImage {
+  id     String @id @default(uuid())
+  postId String @map("post_id")
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  url    String @map("url")
+
+  @@map("post_images")
+}
+
+model PostLike {
+  id     String @id @default(uuid())
+  postId String @map("post_id")
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_likes")
+}
+
+model PostComment {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @map("content")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("post_comments")
+}

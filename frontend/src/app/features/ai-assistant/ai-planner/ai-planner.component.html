@@ -1,0 +1,319 @@
+<div class="min-h-screen bg-slate-50 py-10 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
+  
+  <!-- Subtle Background Gradients -->
+  <div class="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-50/50 to-transparent pointer-events-none -z-10"></div>
+  <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-cyan-100/30 blur-3xl pointer-events-none -z-10"></div>
+
+  <!-- Heading -->
+  <div class="max-w-4xl w-full text-center mb-10">
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200/50 mb-3 animate-pulse">
+      ✨ Trợ lý AI thế hệ mới
+    </span>
+    <h1 class="text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-none">
+      Lập lịch trình du lịch bằng <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-cyan-500">Trí tuệ nhân tạo</span>
+    </h1>
+    <p class="text-slate-500 mt-4 text-base md:text-lg max-w-2xl mx-auto font-medium">
+      Nhập điểm đến và sở thích của bạn, AI sẽ tự động thiết lập hành trình tham quan, ăn uống và nghỉ ngơi hoàn hảo dựa trên cơ sở dữ liệu thật của Travel Hub.
+    </p>
+  </div>
+
+  <!-- Auth Warning (If not logged in) -->
+  @if (!isAuthenticated()) {
+    <div class="max-w-xl w-full bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-xl rounded-3xl p-8 text-center my-6">
+      <div class="h-16 w-16 bg-rose-50 text-rose-500 flex items-center justify-center rounded-2xl text-3xl mx-auto mb-4 border border-rose-100">
+        🔑
+      </div>
+      <h3 class="text-xl font-bold text-slate-800">Yêu cầu đăng nhập</h3>
+      <p class="text-slate-500 text-sm mt-2 mb-6">
+        Để lập lịch trình bằng AI và tự động lưu vào danh sách hành trình cá nhân, bạn vui lòng đăng nhập vào tài khoản.
+      </p>
+      <button 
+        routerLink="/"
+        class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition transform hover:scale-105 active:scale-95"
+      >
+        Quay lại trang chủ để Đăng nhập
+      </button>
+    </div>
+  } @else {
+
+    <!-- Form & Results Container -->
+    <div class="max-w-4xl w-full flex flex-col gap-8 relative z-10">
+      
+      <!-- ITINERARY FORM -->
+      @if (!showResult()) {
+        <div class="bg-white/90 backdrop-blur-md border border-slate-200/60 shadow-xl rounded-3xl p-6 md:p-8">
+          <form [formGroup]="plannerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              <!-- Destination Input -->
+              <div class="flex flex-col gap-1.5">
+                <label for="destination" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Điểm đến mơ ước</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-3.5 text-slate-400">🔍</span>
+                  <input 
+                    type="text" 
+                    id="destination" 
+                    formControlName="destination"
+                    placeholder="Ví dụ: Đà Nẵng, Hà Nội, Phú Quốc..."
+                    class="w-full bg-slate-50/55 border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:bg-white focus:border-cyan-400 transition"
+                    [class.border-red-400]="plannerForm.controls['destination'].invalid && plannerForm.controls['destination'].touched"
+                  />
+                </div>
+                @if (plannerForm.controls['destination'].invalid && plannerForm.controls['destination'].touched) {
+                  <span class="text-xs text-red-500 font-semibold mt-0.5">Vui lòng nhập điểm đến hợp lệ.</span>
+                }
+              </div>
+
+              <!-- Days Select -->
+              <div class="flex flex-col gap-1.5">
+                <label for="days" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số ngày khám phá</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-3.5 text-slate-400">📅</span>
+                  <select 
+                    id="days" 
+                    formControlName="days"
+                    class="w-full bg-slate-50/55 border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:bg-white focus:border-cyan-400 transition appearance-none cursor-pointer"
+                  >
+                    <option [value]="1">1 Ngày</option>
+                    <option [value]="2">2 Ngày 1 Đêm</option>
+                    <option [value]="3">3 Ngày 2 Đêm</option>
+                    <option [value]="4">4 Ngày 3 Đêm</option>
+                    <option [value]="5">5 Ngày 4 Đêm</option>
+                    <option [value]="7">7 Ngày 6 Đêm</option>
+                    <option [value]="10">10 Ngày</option>
+                  </select>
+                  <span class="absolute right-4 top-3.5 pointer-events-none text-slate-400 text-xs">▼</span>
+                </div>
+              </div>
+
+              <!-- Budget Options -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Ngân sách dự kiến</label>
+                <div class="grid grid-cols-1 gap-2">
+                  @for (opt of budgetOptions; track opt.value) {
+                    <label 
+                      class="flex items-center gap-3 border rounded-2xl p-3.5 cursor-pointer hover:bg-slate-50 transition"
+                      [ngClass]="{'border-cyan-400 bg-cyan-50/20': plannerForm.value.budget === opt.value}"
+                    >
+                      <input 
+                        type="radio" 
+                        formControlName="budget" 
+                        [value]="opt.value" 
+                        class="accent-cyan-500 h-4 w-4"
+                      />
+                      <div>
+                        <span class="text-sm font-bold text-slate-800">{{ opt.value === 'Budget' ? 'Tiết kiệm' : opt.value === 'Medium' ? 'Trung bình' : 'Cao cấp' }}</span>
+                        <p class="text-[11px] text-slate-400 font-medium mt-0.5">{{ opt.label }}</p>
+                      </div>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <!-- Companion Options -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Người bạn đồng hành</label>
+                <div class="grid grid-cols-1 gap-2">
+                  @for (opt of companionOptions; track opt.value) {
+                    <label 
+                      class="flex items-center gap-3 border rounded-2xl p-3.5 cursor-pointer hover:bg-slate-50 transition"
+                      [ngClass]="{'border-cyan-400 bg-cyan-50/20': plannerForm.value.companions === opt.value}"
+                    >
+                      <input 
+                        type="radio" 
+                        formControlName="companions" 
+                        [value]="opt.value" 
+                        class="accent-cyan-500 h-4 w-4"
+                      />
+                      <div>
+                        <span class="text-sm font-bold text-slate-800">{{ opt.value === 'Solo' ? 'Một mình' : opt.value === 'Couple' ? 'Cặp đôi' : opt.value === 'Family' ? 'Gia đình' : 'Bạn bè' }}</span>
+                        <p class="text-[11px] text-slate-400 font-medium mt-0.5">{{ opt.label }}</p>
+                      </div>
+                    </label>
+                  }
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4 flex justify-center">
+              <button 
+                type="submit"
+                class="w-full md:w-auto min-w-[200px] flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-700 hover:to-cyan-600 text-white font-black text-sm rounded-full shadow-lg transition transform hover:scale-105 active:scale-95"
+              >
+                <span>🪄</span> Lên lịch trình ngay
+              </button>
+            </div>
+
+          </form>
+        </div>
+      }
+
+      <!-- ARTISTIC RADAR GENERATING OVERLAY -->
+      @if (isLoading()) {
+        <div class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+          
+          <!-- Radial Neon Radar Container -->
+          <div class="relative w-72 h-72 rounded-full border border-cyan-500/20 flex items-center justify-center mb-8">
+            
+            <!-- Radar sweeping beam -->
+            <div class="radar-sweep absolute inset-0 rounded-full"></div>
+            
+            <!-- Pulsing Halo Core -->
+            <div class="relative h-20 w-20 rounded-full bg-gradient-to-r from-indigo-500 to-[#01FCEF] p-[2px] shadow-[0_0_30px_rgba(1,252,239,0.4)] flex items-center justify-center animate-pulse">
+              <div class="h-full w-full rounded-full bg-slate-950 flex items-center justify-center">
+                <span class="text-3xl animate-bounce">🤖</span>
+              </div>
+            </div>
+            
+            <!-- Radar grid concentric circles -->
+            <div class="absolute h-52 w-52 rounded-full border border-cyan-500/10"></div>
+            <div class="absolute h-36 w-36 rounded-full border border-cyan-500/10"></div>
+          </div>
+
+          <!-- Monospace running terminal logs -->
+          <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl text-left font-mono text-xs text-cyan-400 space-y-1.5 select-none relative overflow-hidden">
+            <div class="flex items-center gap-1.5 text-slate-500 mb-2 pb-1.5 border-b border-slate-800">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500/60"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/60"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-green-500/60"></span>
+              <span class="text-[10px] uppercase ml-1 tracking-wider">AI Travel Console</span>
+            </div>
+            
+            <p class="text-slate-500">> Initiating request...</p>
+            <p class="text-indigo-400">> Setting system temperature: 0.5</p>
+            <p class="text-slate-500">> Matching target parameters...</p>
+            <p class="font-bold text-cyan-300 animate-pulse">> {{ loadingText() }}</p>
+            <p class="text-emerald-500/80 animate-pulse">> Retrying with Backoff if required...</p>
+            
+            <div class="absolute bottom-1 right-2 text-[9px] text-slate-600">STRICT JSON MODE</div>
+          </div>
+
+        </div>
+      }
+
+      <!-- ITINERARY RESULTS -->
+      @if (showResult() && itinerary()) {
+        <div class="bg-white/95 backdrop-blur-md border border-slate-200/60 shadow-xl rounded-3xl p-6 md:p-8 animate-fade-in">
+          
+          <!-- Itinerary Header -->
+          <div class="border-b border-slate-100 pb-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                ✔️ Hoàn tất & Đã lưu vào DB
+              </span>
+              <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight mt-2.5">{{ itinerary()?.title }}</h2>
+              <p class="text-slate-500 text-sm mt-1.5 font-medium leading-relaxed">{{ itinerary()?.description }}</p>
+            </div>
+            
+            <!-- Quick Link to Detail Trip Planner of Module 9 -->
+            <a 
+              [routerLink]="['/trip', itinerary()?.tripId]"
+              class="flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-2xl shadow-md transition transform hover:scale-105 active:scale-95 flex-shrink-0"
+            >
+              <span>🗺️</span> Xem chi tiết trong Planner
+            </a>
+          </div>
+
+          <!-- Day Tabs -->
+          <div class="flex flex-wrap gap-2 mb-8 border-b border-slate-100 pb-4">
+            @for (day of itinerary()?.days; track day.dayNumber) {
+              <button 
+                (click)="setActiveTab(day.dayNumber)"
+                class="px-5 py-2.5 rounded-xl text-xs font-black transition duration-200 select-none"
+                [class.bg-gradient-to-r]="activeDayTab() === day.dayNumber"
+                [class.from-indigo-600]="activeDayTab() === day.dayNumber"
+                [class.to-cyan-500]="activeDayTab() === day.dayNumber"
+                [class.text-white]="activeDayTab() === day.dayNumber"
+                [class.shadow-md]="activeDayTab() === day.dayNumber"
+                [class.bg-slate-100]="activeDayTab() !== day.dayNumber"
+                [class.text-slate-600]="activeDayTab() !== day.dayNumber"
+                [class.hover:bg-slate-200]="activeDayTab() !== day.dayNumber"
+              >
+                Ngày {{ day.dayNumber }}
+              </button>
+            }
+          </div>
+
+          <!-- Active Day Activities -->
+          @for (day of itinerary()?.days; track day.dayNumber) {
+            @if (activeDayTab() === day.dayNumber) {
+              <div class="space-y-6 relative pl-4 border-l border-slate-100">
+                
+                @for (act of day.activities; track $index) {
+                  <div class="relative bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/50 hover:border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow transition flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+                    
+                    <!-- Timeline circle ring indicator -->
+                    <div class="absolute -left-[22px] top-7 h-3.5 w-3.5 rounded-full border-2 border-white bg-indigo-500 ring-4 ring-indigo-50"></div>
+                    
+                    <!-- Activity Core Info -->
+                    <div class="space-y-2 flex-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <!-- Time -->
+                        <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100">
+                          ⏱️ {{ act.time }}
+                        </span>
+                        
+                        <!-- Category Badge -->
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border" [ngClass]="getCategoryColor(act.category)">
+                          {{ getCategoryIcon(act.category) }} {{ act.category }}
+                        </span>
+                      </div>
+
+                      <!-- Place Name with router link if Place_ID available -->
+                      <div>
+                        @if (act.placeId) {
+                          <a 
+                            [routerLink]="['/place', act.placeId]"
+                            target="_blank"
+                            class="text-base font-bold text-slate-800 hover:text-cyan-600 hover:underline inline-flex items-center gap-1"
+                          >
+                            {{ act.placeName }}
+                            <span class="text-[10px] bg-cyan-50 text-cyan-600 border border-cyan-100 font-bold px-1.5 py-0.5 rounded">✔️ Khớp thực tế</span>
+                          </a>
+                        } @else {
+                          <h4 class="text-base font-bold text-slate-800">{{ act.placeName }}</h4>
+                        }
+                      </div>
+
+                      <!-- Activity Note -->
+                      <p class="text-slate-500 text-xs leading-relaxed font-medium">{{ act.note }}</p>
+                    </div>
+
+                    <!-- Open Details Shortcut Button -->
+                    @if (act.placeId) {
+                      <a 
+                        [routerLink]="['/place', act.placeId]"
+                        target="_blank"
+                        class="px-4 py-2 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 rounded-xl text-[11px] font-bold text-slate-600 hover:text-slate-800 shadow-sm transition active:scale-95 flex-shrink-0"
+                      >
+                        Chi tiết địa điểm
+                      </a>
+                    }
+
+                  </div>
+                }
+
+              </div>
+            }
+          }
+
+          <!-- Option to Plan a New Trip -->
+          <div class="mt-10 border-t border-slate-100 pt-6 flex justify-end">
+            <button 
+              (click)="showResult.set(false)"
+              class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-sm transition"
+            >
+              🔄 Tạo lịch trình mới
+            </button>
+          </div>
+
+        </div>
+      }
+
+    </div>
+  }
+
+</div>

@@ -1,0 +1,60 @@
+@keyframes postSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-post-slide {
+  animation: postSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.trip-gift-ticket {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.25);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    transition: none;
+  }
+
+  &:hover {
+    transform: translateY(-3px) scale(1.008);
+    box-shadow: 0 16px 32px -6px rgba(99, 102, 241, 0.35), 0 0 15px rgba(1, 252, 239, 0.1);
+    border-color: rgba(1, 252, 239, 0.3);
+
+    &::before {
+      left: 150%;
+      transition: all 0.9s ease-in-out;
+    }
+  }
+}
+
+.text-slate-350 {
+  color: #cbd5e1;
+}
+
+.bg-grid-pattern {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}

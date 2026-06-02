@@ -1,0 +1,26 @@
+# Bỏ qua mọi thư mục node_modules trong dự án (cả frontend và backend)
+**/node_modules/
+
+# Bỏ qua thư mục build đầu ra của Angular và Node.js
+**/dist/
+**/tmp/
+**/out-tsc/
+
+# Bỏ qua bộ nhớ tạm của Angular
+**/.angular/
+
+# Bỏ qua các file cấu hình môi trường chứa thông tin bảo mật (mật khẩu, API key)
+**/.env
+**/.env.*
+
+# File cấu hình cá nhân của IDE (VS Code, WebStorm...)
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# File rác của hệ điều hành
+.DS_Store
+Thumbs.db

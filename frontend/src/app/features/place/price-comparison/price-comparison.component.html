@@ -1,0 +1,92 @@
+<div class="price-comparison-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm mb-6" *ngIf="!isLoading() && prices().length > 0">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-indigo-600">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+      </svg>
+      So sánh giá phòng & vé
+    </h3>
+    <span class="text-xs font-bold text-slate-400">Cập nhật thời gian thực</span>
+  </div>
+
+  <div class="space-y-3">
+    <div 
+      *ngFor="let item of prices()" 
+      class="price-row flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 hover:shadow-md"
+      [ngClass]="{
+        'bg-cyan-500/[0.05] border-cyan-300/80 shadow-sm shadow-cyan-100': item.isBestDeal,
+        'bg-slate-50/50 border-slate-100': !item.isBestDeal
+      }"
+    >
+      <div class="flex items-center gap-3">
+        <!-- Partner Logo Text / Custom Badges -->
+        <span 
+          class="font-black text-sm tracking-wider uppercase px-3 py-1.5 rounded-xl border"
+          [ngClass]="{
+            'partner-agoda bg-orange-50 border-orange-100 text-orange-600': item.partnerName === 'AGODA',
+            'partner-booking bg-blue-50 border-blue-100 text-blue-700': item.partnerName === 'BOOKING_COM',
+            'partner-expedia bg-yellow-50 border-yellow-100 text-yellow-700': item.partnerName === 'EXPEDIA'
+          }"
+        >
+          {{ item.partnerName === 'BOOKING_COM' ? 'Booking.com' : item.partnerName }}
+        </span>
+        
+        <span *ngIf="item.isBestDeal" class="best-deal-badge bg-cyan-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm shadow-cyan-300">
+          BEST DEAL
+        </span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <span class="text-xs font-bold text-slate-400 block">Giá từ</span>
+          <span class="text-base font-black text-slate-800">{{ formatPrice(item.price) }}</span>
+        </div>
+
+        <button 
+          (click)="handleRedirect(item)"
+          class="btn-view-deal text-xs font-bold text-white px-5 py-3 rounded-xl transition-all duration-300 flex items-center gap-1.5 active:scale-95 shadow-sm"
+          [ngClass]="{
+            'bg-cyan-500 hover:bg-cyan-600 shadow-cyan-200': item.isBestDeal,
+            'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100': !item.isBestDeal
+          }"
+        >
+          Xem Deal
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Interstitial Secure Redirect Modal -->
+<div 
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-opacity duration-300"
+  *ngIf="showRedirectModal()"
+>
+  <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center shadow-2xl border border-slate-100 animate-scale-in">
+    <!-- Pulse Wave Loading SVG Animation -->
+    <div class="wave-container mb-6 flex justify-center items-center">
+      <div class="pulse-wave-ring ring-1"></div>
+      <div class="pulse-wave-ring ring-2"></div>
+      <div class="pulse-wave-ring ring-3"></div>
+      <div class="icon-secure bg-indigo-600 text-white rounded-full p-4 shadow-lg shadow-indigo-200 relative z-10">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+        </svg>
+      </div>
+    </div>
+
+    <h4 class="text-xl font-black text-slate-800 mb-2">Đang kết nối tới đối tác liên kết bảo mật</h4>
+    <p class="text-sm text-slate-500 leading-relaxed mb-4">
+      Hệ thống đang định tuyến và áp dụng mã ưu đãi thành viên bảo mật để chuyển tiếp bạn tới <strong class="text-indigo-600">{{ redirectingPartner() }}</strong>.
+    </p>
+
+    <!-- Simulated secure verification steps list -->
+    <div class="inline-flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 border border-slate-100">
+      <span class="dot-loading"></span>
+      Đang mã hóa dữ liệu bảo mật (SSL 256-bit)
+    </div>
+  </div>
+</div>

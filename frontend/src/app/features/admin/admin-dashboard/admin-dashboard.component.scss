@@ -1,0 +1,41 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.kpi-card {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.04);
+    border-color: rgba(99, 102, 241, 0.15);
+  }
+}
+
+.glow-input {
+  transition: all 0.2s ease-in-out;
+  
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    border-color: #6366f1;
+  }
+}
+
+.text-indigo-750 {
+  color: #312e81;
+}
+
+.bg-rose-55 {
+  background-color: rgba(244, 63, 94, 0.05);
+}

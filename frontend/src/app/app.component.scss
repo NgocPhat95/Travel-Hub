@@ -1,0 +1,41 @@
+// Sub-navbar slide down animation
+.animate-slide-down {
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Sub-navbar button underline animations
+nav .border-t button {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -8px; // Align to the border-t container bottom
+    left: 0;
+    width: 100%;
+    height: 2.5px;
+    background-color: #01FCEF; // Project Cyan active line
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &:hover {
+    color: #06b6d4 !important; // Project Cyan hover text
+    
+    &::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+}

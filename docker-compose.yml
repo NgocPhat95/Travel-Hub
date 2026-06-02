@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # 1. Cơ sở dữ liệu chính: PostgreSQL (Cổng mặc định 5432)
+  postgres:
+    image: postgres:16-alpine
+    container_name: travel_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: travel_user
+      POSTGRES_PASSWORD: travel_password_2026
+      POSTGRES_DB: travel_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Hệ thống lưu trữ đệm (Cache): Redis (Cổng mặc định 6379)
+  redis:
+    image: redis:7-alpine
+    container_name: travel_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # 3. Công cụ tìm kiếm nâng cao: Elasticsearch (Cổng mặc định 9200)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: travel_elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # Tắt bảo mật để dễ kết nối dev local
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Giới hạn RAM tối đa 512MB để tránh nặng máy
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  es_data:

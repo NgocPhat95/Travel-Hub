@@ -1,0 +1,263 @@
+<div class="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
+  <!-- Navbar Glassmorphism -->
+  <nav class="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <!-- Left: Logo -->
+      <div class="flex items-center">
+        <a routerLink="/" class="text-2xl font-black tracking-tighter text-slate-900 hover:opacity-90 flex-shrink-0">
+          Travel<span class="text-cyan-500 font-extrabold">Hub</span>
+        </a>
+      </div>
+ 
+      <!-- Center: Navbar Search Bar (Shows on scroll on home, or always on inner pages) -->
+      @if (showNavbarSearch()) {
+        <div class="flex-1 max-w-md mx-8 relative hidden md:block">
+          <form (ngSubmit)="onSearchSubmit()" class="flex items-center bg-slate-100/85 rounded-full border border-slate-200 px-4 py-1.5 focus-within:bg-white focus-within:border-cyan-400 transition-all duration-200">
+            <svg class="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input
+              type="text"
+              [formControl]="searchControl"
+              (focus)="onFocus()"
+              placeholder="Tìm kiếm..."
+              class="w-full bg-transparent border-none outline-none text-slate-800 text-xs font-semibold placeholder-slate-400"
+            />
+            @if (isLoading()) {
+              <div class="h-3 w-3 animate-spin rounded-full border border-cyan-500 border-t-transparent ml-1"></div>
+            }
+          </form>
+
+          <!-- Autocomplete Dropdown (Small) -->
+          @if (showDropdown() && suggestions().length > 0) {
+            <div class="absolute w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 text-left">
+              <div class="space-y-0.5">
+                @for (place of suggestions(); track place.id) {
+                  <div 
+                    (click)="selectPlace(place)"
+                    class="flex items-center px-3 py-2 rounded-xl hover:bg-slate-50 cursor-pointer transition select-none"
+                  >
+                    <div class="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 mr-2 flex-shrink-0">
+                      @if (place.category === 'HOTEL') {
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                      } @else if (place.category === 'RESTAURANT') {
+                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                      } @else {
+                        <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                      }
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h5 class="text-xs font-bold text-slate-800 truncate" [innerHTML]="highlightMatch(place.name)"></h5>
+                      <p class="text-[10px] text-slate-400 truncate mt-0.5">{{ place.address }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Spacer when search is hidden -->
+        <div class="flex-1 hidden md:block"></div>
+      }
+
+      <!-- Right: Navigation Links & Auth -->
+      <div class="flex items-center gap-6">
+        <div class="hidden lg:flex items-center gap-6">
+          <a routerLink="/places" class="text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans">
+            Danh mục
+          </a>
+          <a routerLink="/map-search" class="text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans">
+            Bản đồ du lịch
+          </a>
+          <a routerLink="/feed" class="text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans">
+            Bảng tin (Social)
+          </a>
+          <a (click)="openQuickReviewSearch()" class="text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans flex items-center gap-1.5 cursor-pointer select-none">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+            </svg>
+            Viết đánh giá
+          </a>
+          <a routerLink="/ai-planner" class="text-sm font-bold text-cyan-600 hover:text-indigo-600 transition font-sans flex items-center gap-1.5">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+            </span>
+            AI Planner
+          </a>
+          @if (user()?.role === 'SUPER_ADMIN') {
+            <a routerLink="/admin" class="text-sm font-black text-rose-600 hover:text-rose-700 transition font-sans">
+              Admin Panel
+            </a>
+          }
+        </div>
+
+        <!-- Auth state -->
+        @if (isAuthenticated() && user()) {
+          <div class="flex items-center gap-4">
+            <!-- Test link for Public Profile (using self ID as a test) -->
+            <a [routerLink]="['/public-profile', user()?.id]" class="text-xs text-slate-500 hover:text-cyan-600 transition font-medium">
+              Xem hồ sơ công khai của tôi
+            </a>
+
+            <!-- Avatar -->
+            <a routerLink="/profile" class="flex items-center gap-2 group">
+              <div class="h-9 w-9 overflow-hidden rounded-full border border-slate-200 shadow-sm transition group-hover:scale-105">
+                @if (user()?.avatarUrl) {
+                  <img [src]="user()?.avatarUrl!" alt="Avatar" class="h-full w-full object-cover">
+                } @else {
+                  <div class="flex h-full w-full items-center justify-center bg-slate-200 text-sm font-bold text-slate-600">
+                    {{ user()?.fullName?.charAt(0) || 'U' }}
+                  </div>
+                }
+              </div>
+              <span class="text-sm font-semibold text-slate-700 group-hover:text-slate-950 transition">
+                {{ user()?.fullName }}
+              </span>
+            </a>
+
+            <!-- Logout -->
+            <button
+              (click)="logout()"
+              class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 shadow-sm transition"
+            >
+              Đăng xuất
+            </button>
+          </div>
+        } @else {
+          <button
+            (click)="showAuthModal = true"
+            class="rounded-full bg-gradient-to-r from-indigo-500 to-[#01FCEF] px-6 py-2.5 text-sm font-bold text-white shadow-[0_0_15px_rgba(1,252,239,0.25)] transition hover:scale-105 active:scale-95"
+          >
+            Đăng nhập
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Sub-navbar (Categories selection bar that appears ONLY on homepage scroll) -->
+    @if (isHomePage() && showNavbarSearch()) {
+      <div class="border-t border-slate-100 bg-white/60 backdrop-blur-md px-6 py-2 transition-all duration-300">
+        <div class="mx-auto flex max-w-7xl w-full items-center justify-start gap-8">
+          <button 
+            (click)="selectNavbarTab('ATTRACTION')"
+            class="text-xs font-bold text-slate-800 hover:text-black transition duration-200 focus:outline-none"
+          >
+            Hoạt động giải trí
+          </button>
+          <button 
+            (click)="selectNavbarTab('HOTEL')"
+            class="text-xs font-bold text-slate-800 hover:text-black transition duration-200 focus:outline-none"
+          >
+            Khách sạn
+          </button>
+          <button 
+            (click)="selectNavbarTab('RESTAURANT')"
+            class="text-xs font-bold text-slate-800 hover:text-black transition duration-200 focus:outline-none"
+          >
+            Nhà hàng
+          </button>
+        </div>
+      </div>
+    }
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 w-full bg-slate-50 relative">
+    <router-outlet></router-outlet>
+  </main>
+  
+  <!-- Floating AI Chatbot Concierge -->
+  <app-ai-concierge></app-ai-concierge>
+</div>
+
+<!-- Modal Component -->
+@if (showAuthModal) {
+  <app-auth-modal (close)="showAuthModal = false" (success)="showAuthModal = false"></app-auth-modal>
+}
+
+<!-- Quick Review Search Modal -->
+@if (showQuickReviewSearchModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100/80 flex flex-col space-y-4">
+      
+      <!-- Close button -->
+      <button 
+        (click)="showQuickReviewSearchModal.set(false)"
+        class="absolute top-4 right-4 rounded-full p-1.5 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <!-- Content -->
+      <div class="text-center pb-2">
+        <h3 class="text-lg font-black text-slate-800 tracking-tight">Hãy chia sẻ trải nghiệm của bạn</h3>
+        <p class="text-xs text-slate-400 font-medium mt-1">Tìm địa điểm để bắt đầu viết đánh giá</p>
+      </div>
+
+      <!-- Search Input -->
+      <div class="relative">
+        <div class="flex items-center bg-slate-50 rounded-2xl border border-slate-200 px-4 py-3 focus-within:bg-white focus-within:border-cyan-400 transition-all duration-200">
+          <svg class="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input
+            type="text"
+            [formControl]="reviewSearchControl"
+            placeholder="Tên khách sạn, nhà hàng, điểm tham quan..."
+            class="w-full bg-transparent border-none outline-none text-slate-800 text-xs font-semibold placeholder-slate-400"
+            autofocus
+          />
+          @if (isLoadingReviewSearch()) {
+            <div class="h-3 w-3 animate-spin rounded-full border border-cyan-500 border-t-transparent ml-1"></div>
+          }
+        </div>
+
+        <!-- Search Suggestions -->
+        @if (reviewSuggestions().length > 0) {
+          <div class="mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 max-h-[220px] overflow-y-auto">
+            <div class="space-y-0.5">
+              @for (place of reviewSuggestions(); track place.id) {
+                <div 
+                  (click)="selectPlaceForReview(place)"
+                  class="flex items-center px-3 py-2 rounded-xl hover:bg-slate-50 cursor-pointer transition select-none"
+                >
+                  <div class="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 mr-2.5 flex-shrink-0">
+                    @if (place.category === 'HOTEL') {
+                      <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    } @else if (place.category === 'RESTAURANT') {
+                      <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    } @else {
+                      <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    }
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h5 class="text-xs font-bold text-slate-800 truncate">{{ place.name }}</h5>
+                    <p class="text-[10px] text-slate-400 truncate mt-0.5">{{ place.address }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else if (reviewSearchControl.value && !isLoadingReviewSearch()) {
+          <div class="mt-2 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center text-slate-400 text-xs font-bold">
+            Không tìm thấy địa điểm nào khớp
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- Write Review Modal Component -->
+@if (showWriteReviewModal() && selectedPlaceForReview()) {
+  <app-write-review-modal
+    [placeId]="selectedPlaceForReview()!.id"
+    (close)="showWriteReviewModal.set(false); selectedPlaceForReview.set(null)"
+    (submitted)="onReviewSubmitted()"
+  ></app-write-review-modal>
+}

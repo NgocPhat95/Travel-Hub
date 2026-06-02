@@ -1,0 +1,57 @@
+.neon-marker-cyan {
+  width: 14px;
+  height: 14px;
+  background-color: #01FCEF;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #01FCEF, 0 0 20px #01FCEF;
+  transition: all 0.3s ease;
+  &:hover {
+    transform: scale(1.3);
+    box-shadow: 0 0 15px #01FCEF, 0 0 30px #01FCEF;
+  }
+}
+
+.neon-marker-indigo {
+  width: 14px;
+  height: 14px;
+  background-color: #6366f1;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #6366f1, 0 0 20px #6366f1;
+  transition: all 0.3s ease;
+  &:hover {
+    transform: scale(1.3);
+    box-shadow: 0 0 15px #6366f1, 0 0 30px #6366f1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom styling to override Leaflet default popup container */
+::ng-deep {
+  .leaflet-popup-content-wrapper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 1.25rem !important;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  }
+  .leaflet-popup-tip {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+}

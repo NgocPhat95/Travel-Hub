@@ -1,0 +1,295 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div 
+    class="modal-container w-full max-w-lg rounded-[2.5rem] overflow-hidden bg-white shadow-2xl relative" 
+    (click)="$event.stopPropagation()"
+  >
+    
+    <!-- Top Progress Indicator -->
+    @if (!success()) {
+      <div class="w-full bg-slate-100 h-1.5 relative overflow-hidden">
+        <div 
+          class="progress-bar-glow bg-gradient-to-r from-cyan-400 to-indigo-500 h-full absolute left-0 top-0 transition-all duration-300"
+          [style.width.%]="(currentStep() / 3) * 100"
+        ></div>
+      </div>
+    }
+
+    <!-- Modal Header -->
+    <div class="px-8 pt-8 pb-4 flex justify-between items-center">
+      <div>
+        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Chia sẻ trải nghiệm</span>
+        <h3 class="text-xl font-black text-slate-900 tracking-tight">Viết đánh giá địa điểm</h3>
+      </div>
+      <button 
+        (click)="close.emit()" 
+        class="h-8 w-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Body (Success state) -->
+    @if (success()) {
+      <div class="px-8 py-16 text-center space-y-6">
+        <div class="success-checkmark">
+          <div class="check-icon">
+            <span class="icon-line line-tip"></span>
+            <span class="icon-line line-long"></span>
+            <div class="icon-circle"></div>
+            <div class="icon-fix"></div>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <h4 class="text-lg font-black text-slate-900">Gửi đánh giá thành công!</h4>
+          <p class="text-xs text-slate-400 font-bold">Cảm ơn đóng góp quý giá của bạn dành cho Travel Hub.</p>
+        </div>
+      </div>
+    } @else {
+      <!-- Modal Body (Stepper wizard) -->
+      <div class="px-8 py-4 min-h-[300px]">
+        
+        <!-- Error Message Banner -->
+        @if (errorMessage()) {
+          <div class="mb-4 p-3 rounded-2xl border border-rose-250 bg-rose-50 text-xs font-bold text-rose-600 animate-pulse">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <!-- STEP 1: Ratings -->
+        @if (currentStep() === 1) {
+          <div class="space-y-6 animate-fade-in">
+            <p class="text-xs text-slate-400 font-semibold">Vui lòng xếp hạng các tiêu chí phục vụ bên dưới bằng cách chọn số sao (1-5 sao):</p>
+            
+            <!-- Category: Overall Rating -->
+            <div class="space-y-2 bg-slate-50/50 border border-slate-200/50 rounded-2xl p-4">
+              <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">1. Điểm đánh giá tổng quan</label>
+              <div class="flex items-center gap-2">
+                @for (star of [1,2,3,4,5]; track star) {
+                  <button 
+                    type="button" 
+                    (click)="setRating('overall', star)"
+                    (mouseenter)="setHover('overall', star)"
+                    (mouseleave)="setHover('overall', 0)"
+                    [class.active]="ratingOverall() >= star"
+                    class="star-rating-btn text-3xl focus:outline-none"
+                    [class.text-amber-400]="(hoverOverall() || ratingOverall()) >= star"
+                    [class.text-slate-200]="(hoverOverall() || ratingOverall()) < star"
+                  >
+                    ★
+                  </button>
+                }
+                @if (ratingOverall() > 0) {
+                  <span class="text-xs font-black text-amber-500 ml-2">({{ ratingOverall() }} sao)</span >
+                }
+              </div>
+            </div>
+
+            <!-- Category: Cleanliness Rating -->
+            <div class="space-y-2 bg-slate-50/50 border border-slate-200/50 rounded-2xl p-4">
+              <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">2. Mức độ vệ sinh & sạch sẽ</label>
+              <div class="flex items-center gap-2">
+                @for (star of [1,2,3,4,5]; track star) {
+                  <button 
+                    type="button" 
+                    (click)="setRating('cleanliness', star)"
+                    (mouseenter)="setHover('cleanliness', star)"
+                    (mouseleave)="setHover('cleanliness', 0)"
+                    [class.active]="ratingCleanliness() >= star"
+                    class="star-rating-btn text-3xl focus:outline-none"
+                    [class.text-amber-400]="(hoverCleanliness() || ratingCleanliness()) >= star"
+                    [class.text-slate-200]="(hoverCleanliness() || ratingCleanliness()) < star"
+                  >
+                    ★
+                  </button>
+                }
+                @if (ratingCleanliness() > 0) {
+                  <span class="text-xs font-black text-amber-500 ml-2">({{ ratingCleanliness() }} sao)</span >
+                }
+              </div>
+            </div>
+
+            <!-- Category: Service Rating -->
+            <div class="space-y-2 bg-slate-50/50 border border-slate-200/50 rounded-2xl p-4">
+              <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">3. Chất lượng phục vụ & tiện ích</label>
+              <div class="flex items-center gap-2">
+                @for (star of [1,2,3,4,5]; track star) {
+                  <button 
+                    type="button" 
+                    (click)="setRating('service', star)"
+                    (mouseenter)="setHover('service', star)"
+                    (mouseleave)="setHover('service', 0)"
+                    [class.active]="ratingService() >= star"
+                    class="star-rating-btn text-3xl focus:outline-none"
+                    [class.text-amber-400]="(hoverService() || ratingService()) >= star"
+                    [class.text-slate-200]="(hoverService() || ratingService()) < star"
+                  >
+                    ★
+                  </button>
+                }
+                @if (ratingService() > 0) {
+                  <span class="text-xs font-black text-amber-500 ml-2">({{ ratingService() }} sao)</span >
+                }
+              </div>
+            </div>
+
+          </div>
+        }
+
+        <!-- STEP 2: Content -->
+        @if (currentStep() === 2) {
+          <div class="space-y-4 animate-fade-in" [formGroup]="reviewForm">
+            <p class="text-xs text-slate-400 font-semibold">Hãy chia sẻ chi tiết cảm nghĩ của bạn khi đặt chân tới địa điểm này:</p>
+            
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Tiêu đề đánh giá</label>
+              <input 
+                type="text" 
+                formControlName="title"
+                class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-semibold"
+                placeholder="Tóm tắt trải nghiệm của bạn (ví dụ: Địa điểm tuyệt vời...)"
+              />
+              @if (reviewForm.get('title')?.touched && reviewForm.get('title')?.errors?.['required']) {
+                <span class="text-[9px] text-rose-500 font-bold">Vui lòng nhập tiêu đề đánh giá</span>
+              }
+              @if (reviewForm.get('title')?.touched && reviewForm.get('title')?.errors?.['minlength']) {
+                <span class="text-[9px] text-rose-500 font-bold">Tiêu đề phải chứa ít nhất 3 ký tự</span>
+              }
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-slate-500 uppercase block tracking-wider font-semibold">Nội dung chi tiết</label>
+              <textarea 
+                formControlName="content"
+                rows="6"
+                class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-medium"
+                placeholder="Kể chi tiết những gì bạn yêu thích, không gian, thái độ phục vụ hay mẹo nhỏ cho mọi người..."
+              ></textarea>
+              @if (reviewForm.get('content')?.touched && reviewForm.get('content')?.errors?.['required']) {
+                <span class="text-[9px] text-rose-500 font-bold">Vui lòng nhập nội dung đánh giá</span>
+              }
+              @if (reviewForm.get('content')?.touched && reviewForm.get('content')?.errors?.['minlength']) {
+                <span class="text-[9px] text-rose-500 font-bold">Nội dung đánh giá phải có tối thiểu 10 ký tự</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- STEP 3: Media Upload -->
+        @if (currentStep() === 3) {
+          <div class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-400 font-semibold">Bạn có hình ảnh hoặc video thực tế muốn chia sẻ? (Tối đa 10MB/tệp):</p>
+            
+            <!-- Drag & Drop Zone -->
+            <div 
+              (dragover)="onDragOver($event)"
+              (drop)="onFileDropped($event)"
+              (click)="fileInput.click()"
+              class="border-2 border-dashed border-slate-200 hover:border-cyan-400 rounded-3xl p-6 text-center cursor-pointer bg-slate-50 hover:bg-cyan-50/10 transition-all duration-300"
+            >
+              <input 
+                #fileInput
+                type="file" 
+                multiple 
+                accept="image/*,video/*"
+                class="hidden"
+                (change)="onFileSelected($event)"
+              />
+              <svg class="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <p class="text-xs font-bold text-slate-600">Kéo & thả ảnh / video hoặc nhấp để duyệt</p>
+              <span class="text-[9px] text-slate-400 font-bold block mt-1">Hỗ trợ các định dạng PNG, JPG, JPEG, MP4</span>
+            </div>
+
+            <!-- Preview thumbnails list -->
+            @if (selectedFiles().length > 0) {
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Đã chọn ({{ selectedFiles().length }})</label>
+                <div class="grid grid-cols-5 gap-2">
+                  @for (fileObj of selectedFiles(); track fileObj.preview; let idx = $index) {
+                    <div class="aspect-square rounded-xl bg-slate-100 border border-slate-200 overflow-hidden relative group">
+                      
+                      @if (fileObj.isVideo) {
+                        <video [src]="fileObj.preview" class="h-full w-full object-cover"></video>
+                        <div class="absolute inset-0 bg-slate-900/30 flex items-center justify-center pointer-events-none">
+                          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+                        </div>
+                      } @else {
+                        <img [src]="fileObj.preview" alt="Upload preview" class="h-full w-full object-cover" />
+                      }
+
+                      <!-- Delete overlay button -->
+                      <button 
+                        type="button" 
+                        (click)="removeFile(idx)"
+                        class="absolute top-1 right-1 h-5 w-5 bg-slate-900/70 hover:bg-slate-900 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- Modal Footer -->
+    @if (!success()) {
+      <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-between items-center rounded-b-[2.5rem]">
+        <div>
+          @if (currentStep() > 1) {
+            <button 
+              type="button"
+              (click)="prevStep()"
+              class="rounded-xl border border-slate-200 bg-white hover:bg-slate-100 px-5 py-2.5 text-xs font-bold text-slate-600 transition"
+            >
+              Quay lại
+            </button>
+          }
+        </div>
+
+        <div class="flex gap-2">
+          <button 
+            type="button"
+            (click)="close.emit()"
+            class="rounded-xl bg-slate-100 hover:bg-slate-200 px-5 py-2.5 text-xs font-bold text-slate-500 transition"
+          >
+            Hủy bỏ
+          </button>
+          
+          @if (currentStep() < 3) {
+            <button 
+              type="button"
+              (click)="nextStep()"
+              class="rounded-xl bg-slate-900 hover:bg-slate-800 px-5 py-2.5 text-xs font-bold text-white shadow transition"
+            >
+              Tiếp tục
+            </button>
+          } @else {
+            <button 
+              type="button"
+              (click)="onSubmit()"
+              [disabled]="isSubmitting()"
+              class="rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-md transition disabled:opacity-50 flex items-center gap-1.5"
+            >
+              @if (isSubmitting()) {
+                <div class="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                <span>Đang gửi...</span>
+              } @else {
+                <span>Đăng đánh giá</span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

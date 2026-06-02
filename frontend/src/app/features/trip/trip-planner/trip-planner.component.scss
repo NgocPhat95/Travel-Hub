@@ -1,0 +1,97 @@
+// Trip Planner styles
+.wishlist-card, .itinerary-card {
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.3s;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// Drag & Drop Spring Animation classes
+.cdk-drag-preview {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  background: white;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(1, 252, 239, 0.5);
+  box-sizing: border-box;
+  opacity: 0.95;
+  transform: scale(1.03);
+  pointer-events: none;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  max-width: 320px;
+}
+
+// cdk drag placeholders
+.cdk-drag-placeholder {
+  opacity: 0.15;
+  border: 2px dashed #01FCEF;
+  background-color: rgba(1, 252, 239, 0.05);
+  min-height: 70px;
+  border-radius: 1.5rem;
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+// Reordering and sliding animation (spring physics)
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cdk-drag-animating {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+// Collaborative drag avatar overlay
+.collaborator-drag-avatar {
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+// Glowing cyan toast alert
+.toast-cyan-collaboration {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: #01FCEF;
+  border: 1px solid rgba(1, 252, 239, 0.3);
+  box-shadow: 0 0 20px rgba(1, 252, 239, 0.2), 
+              0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  padding: 1rem 1.5rem;
+  border-radius: 1.5rem;
+  z-index: 200;
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: slideInRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.glow-input {
+  transition: all 0.2s ease-in-out;
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(1, 252, 239, 0.15);
+  }
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

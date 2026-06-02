@@ -1,0 +1,218 @@
+<div class="min-h-screen bg-slate-50 font-sans pb-16">
+  
+  <!-- Banner Header -->
+  <div class="bg-gradient-to-r from-indigo-900 to-slate-800 text-white py-16 px-6 relative overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center opacity-25" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80');"></div>
+    <div class="max-w-6xl mx-auto relative z-10 text-center md:text-left">
+      <span class="rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300 px-4 py-1 text-xs font-black tracking-wider uppercase">Travel Hub Catalog</span>
+      <h1 class="text-4xl md:text-5xl font-black tracking-tight mt-4 mb-2">Tìm kiếm & Khám phá địa điểm</h1>
+      <p class="text-slate-300 max-w-xl font-medium text-sm md:text-base">Tìm kiếm những khách sạn sang trọng nhất, nhà hàng đậm đà hương vị và các địa điểm tham quan không thể bỏ lỡ.</p>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-6 mt-10">
+    <!-- Filter and Sort Header -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-200/80 pb-6 mb-8">
+      
+      <!-- Categories (TripAdvisor Style Buttons) -->
+      <div class="flex flex-wrap gap-2">
+        <button 
+          (click)="setCategory('')"
+          [class.bg-slate-900]="category() === ''"
+          [class.text-white]="category() === ''"
+          [class.bg-white]="category() !== ''"
+          [class.text-slate-600]="category() !== ''"
+          class="px-5 py-3 rounded-full text-xs font-bold shadow-sm border border-slate-200/60 hover:bg-slate-50 transition"
+        >
+          Tất cả địa điểm
+        </button>
+        <button 
+          (click)="setCategory('HOTEL')"
+          [class.bg-indigo-600]="category() === 'HOTEL'"
+          [class.text-white]="category() === 'HOTEL'"
+          [class.bg-white]="category() !== 'HOTEL'"
+          [class.text-slate-600]="category() !== 'HOTEL'"
+          class="px-5 py-3 rounded-full text-xs font-bold shadow-sm border border-slate-200/60 hover:bg-slate-50 transition"
+        >
+          🏨 Khách sạn
+        </button>
+        <button 
+          (click)="setCategory('RESTAURANT')"
+          [class.bg-rose-500]="category() === 'RESTAURANT'"
+          [class.text-white]="category() === 'RESTAURANT'"
+          [class.bg-white]="category() !== 'RESTAURANT'"
+          [class.text-slate-600]="category() !== 'RESTAURANT'"
+          class="px-5 py-3 rounded-full text-xs font-bold shadow-sm border border-slate-200/60 hover:bg-slate-50 transition"
+        >
+          🍴 Nhà hàng
+        </button>
+        <button 
+          (click)="setCategory('ATTRACTION')"
+          [class.bg-cyan-500]="category() === 'ATTRACTION'"
+          [class.text-white]="category() === 'ATTRACTION'"
+          [class.bg-white]="category() !== 'ATTRACTION'"
+          [class.text-slate-600]="category() !== 'ATTRACTION'"
+          class="px-5 py-3 rounded-full text-xs font-bold shadow-sm border border-slate-200/60 hover:bg-slate-50 transition"
+        >
+          📍 Điểm tham quan
+        </button>
+      </div>
+
+      <!-- Sorting -->
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-black text-slate-400 uppercase tracking-wider">Sắp xếp:</span>
+        <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200">
+          <button 
+            (click)="setSortBy('rating')"
+            [class.bg-white]="sortBy() === 'rating'"
+            [class.text-slate-900]="sortBy() === 'rating'"
+            [class.shadow-sm]="sortBy() === 'rating'"
+            [class.text-slate-500]="sortBy() !== 'rating'"
+            class="px-4 py-2 rounded-full text-xs font-bold transition focus:outline-none"
+          >
+            Đánh giá cao
+          </button>
+          <button 
+            (click)="setSortBy('popularity')"
+            [class.bg-white]="sortBy() === 'popularity'"
+            [class.text-slate-900]="sortBy() === 'popularity'"
+            [class.shadow-sm]="sortBy() === 'popularity'"
+            [class.text-slate-500]="sortBy() !== 'popularity'"
+            class="px-4 py-2 rounded-full text-xs font-bold transition focus:outline-none"
+          >
+            Độ phổ biến
+          </button>
+          <button 
+            (click)="setSortBy('name')"
+            [class.bg-white]="sortBy() === 'name'"
+            [class.text-slate-900]="sortBy() === 'name'"
+            [class.shadow-sm]="sortBy() === 'name'"
+            [class.text-slate-500]="sortBy() !== 'name'"
+            class="px-4 py-2 rounded-full text-xs font-bold transition focus:outline-none"
+          >
+            Tên A-Z
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    @if (errorMessage()) {
+      <div class="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-center text-rose-700 shadow-sm max-w-md mx-auto my-12">
+        <p class="font-bold text-sm">{{ errorMessage() }}</p>
+      </div>
+    }
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="flex flex-col items-center py-20">
+        <div class="h-10 w-10 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent mb-4"></div>
+        <p class="text-slate-400 font-bold text-sm">Đang tải danh sách địa điểm...</p>
+      </div>
+    } @else if (places().length === 0) {
+      <!-- Empty State -->
+      <div class="text-center py-20 border border-dashed border-slate-200 bg-white rounded-[2.5rem] p-8 max-w-lg mx-auto">
+        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+        <h3 class="text-xl font-bold text-slate-800">Không tìm thấy địa điểm nào</h3>
+        <p class="text-slate-500 text-sm mt-1">Danh mục này hiện chưa có dữ liệu địa điểm du lịch.</p>
+      </div>
+    } @else {
+      <!-- Listings Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        @for (place of places(); track place.id) {
+          <div 
+            [routerLink]="['/place', place.id]"
+            class="flex flex-col rounded-[2rem] border border-slate-200/80 bg-white overflow-hidden shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 group cursor-pointer"
+          >
+            <!-- Photo container -->
+            <div class="aspect-[4/3] w-full overflow-hidden relative bg-slate-100">
+              <img 
+                [src]="place.images?.[0] || place.avatarUrl || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80'" 
+                alt="{{ place.name }}" 
+                class="h-full w-full object-cover group-hover:scale-105 transition-all duration-750"
+              />
+              
+              <!-- Travelers' Choice Badge -->
+              @if (place.isTravelersChoice) {
+                <div class="absolute top-4 left-4 bg-[#00AA6C] text-white px-3 py-1.5 rounded-full font-black shadow-md text-[9px] flex items-center gap-1 select-none z-10 border border-white/20" title="Travelers' Choice - Lựa chọn của du khách">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/>
+                  </svg>
+                  <span>Travelers' Choice</span>
+                </div>
+              }
+
+              <!-- Glass-badge rating overlay -->
+              <div class="absolute bottom-4 left-4 bg-cyan-500/90 backdrop-blur-md px-3.5 py-1.5 rounded-2xl text-white font-black shadow-md border border-white/20 text-xs flex items-center gap-1 select-none">
+                <span>★</span>
+                <span>{{ place.ratingAverage }}</span>
+              </div>
+
+              <!-- Verified Shield badge -->
+              @if (place.isVerified) {
+                <div class="absolute top-4 right-4 bg-emerald-500/90 backdrop-blur-md p-1.5 rounded-full text-white shadow-md border border-white/20 select-none" title="Địa điểm đã xác minh">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+              }
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
+                  @if (place.category === 'HOTEL') {
+                    🏨 Khách sạn
+                  } @else if (place.category === 'RESTAURANT') {
+                    🍴 Nhà hàng
+                  } @else {
+                    📍 Điểm tham quan
+                  }
+                </span>
+                <h3 class="text-lg font-black text-slate-800 tracking-tight truncate group-hover:text-cyan-600 transition">{{ place.name }}</h3>
+                <p class="text-xs text-slate-400 truncate mt-1">{{ place.address }}</p>
+                <p class="text-xs text-slate-500 font-medium line-clamp-2 mt-3 leading-relaxed">
+                  {{ place.description || 'Địa điểm du lịch nổi tiếng với dịch vụ chất lượng và phong cảnh tuyệt vời chờ đón bạn khám phá.' }}
+                </p>
+              </div>
+
+              <div class="border-t border-slate-100 pt-4 flex justify-between items-center">
+                <div class="flex flex-wrap gap-1 max-w-[65%]">
+                  @for (amenity of place.amenities.slice(0, 2); track amenity) {
+                    <span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-md border border-slate-200/50 uppercase">{{ amenity }}</span>
+                  }
+                </div>
+                <div class="text-right">
+                  <span class="text-[9px] font-bold text-slate-400 uppercase block tracking-wider">Khoảng giá</span>
+                  <span class="text-xs font-black text-slate-800">{{ place.priceRange || 'Miễn phí' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Pagination Footer -->
+      @if (totalPages > 1) {
+        <div class="flex justify-center items-center gap-6 mt-12 pt-6 border-t border-slate-200/60">
+          <button 
+            (click)="prevPage()"
+            [disabled]="offset() === 0"
+            class="h-10 w-10 rounded-full bg-white hover:bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 transition disabled:opacity-40 disabled:hover:bg-white"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          
+          <span class="text-sm font-bold text-slate-500">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+          <button 
+            (click)="nextPage()"
+            [disabled]="offset() + limit >= total()"
+            class="h-10 w-10 rounded-full bg-white hover:bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 transition disabled:opacity-40 disabled:hover:bg-white"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>

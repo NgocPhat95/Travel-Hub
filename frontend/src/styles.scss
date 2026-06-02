@@ -1,0 +1,51 @@
+/* You can add global styles to this file, and also import other style files */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "leaflet/dist/leaflet.css";
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+  20%, 40%, 60%, 80% { transform: translateX(6px); }
+}
+
+.shake-animation {
+  animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Custom glowing effects for glassmorphic inputs */
+.glow-input {
+  transition: all 0.3s ease;
+  &:focus {
+    box-shadow: 0 0 15px rgba(1, 252, 239, 0.35);
+    border-color: #01FCEF !important;
+  }
+}
+
+/* TripAdvisor Layout Styles */
+.trip-banner {
+  height: 280px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.trip-avatar-overlap {
+  margin-top: -64px; /* Move avatar up to overlap banner */
+  position: relative;
+  z-index: 20;
+}
+
+.trip-tab-active {
+  @apply text-slate-950 border-b-[3px] border-cyan-400 font-black;
+}
+
+

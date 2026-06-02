@@ -1,0 +1,390 @@
+<div class="min-h-screen bg-slate-50 font-sans pb-16">
+  
+  <!-- Back link -->
+  <div class="max-w-6xl mx-auto px-6 pt-6">
+    <a routerLink="/map-search" class="inline-flex items-center text-xs font-bold text-slate-500 hover:text-cyan-600 transition gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+      <span>Quay lại Bản đồ</span>
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <!-- Loading State -->
+    <div class="flex flex-col items-center py-32 max-w-6xl mx-auto">
+      <div class="h-12 w-12 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent mb-4"></div>
+      <p class="text-slate-400 font-bold text-sm">Đang tải chi tiết địa điểm...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <!-- Error State -->
+    <div class="rounded-3xl border border-rose-200 bg-rose-50 p-8 text-center text-rose-700 shadow-sm max-w-md mx-auto my-20">
+      <p class="font-bold text-sm mb-4">{{ errorMessage() }}</p>
+      <button routerLink="/map-search" class="rounded-2xl bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 text-xs font-bold transition">Quay lại</button>
+    </div>
+  } @else if (place()) {
+    <!-- Main Detail Shell -->
+    <div class="max-w-6xl mx-auto px-6 mt-6">
+      
+      <!-- Grid layout for Image presentation -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 rounded-[2.5rem] overflow-hidden bg-white border border-slate-200/60 p-6 shadow-sm mb-8">
+        
+        <!-- Large Main Image (2 columns width) -->
+        <div class="lg:col-span-2 aspect-[16/10] w-full rounded-[2rem] overflow-hidden bg-slate-100 relative">
+          <img 
+            [src]="activeImage()" 
+            alt="Hero Place Image" 
+            class="h-full w-full object-cover transition-all duration-500"
+          />
+          <!-- verified badge -->
+          @if (place()?.isVerified) {
+            <div class="absolute top-6 left-6 bg-emerald-500/90 backdrop-blur-md px-3.5 py-1.5 rounded-2xl text-white font-bold shadow-md border border-white/20 text-xs flex items-center gap-1 select-none">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>Địa điểm đã xác minh</span>
+            </div>
+          }
+        </div>
+
+        <!-- Right Gallery Grid & Active Image Selector (1 column) -->
+        <div class="flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Hình ảnh thực tế</span>
+            <div class="flex justify-between items-start gap-4">
+              <div class="space-y-1.5 flex-1 min-w-0">
+                <h2 class="text-xl font-black text-slate-900 tracking-tight leading-tight flex flex-wrap items-center gap-2">
+                  <span>{{ place()?.name }}</span>
+                  @if (place()?.isTravelersChoice) {
+                    <span class="inline-flex items-center gap-1 bg-[#00AA6C] text-white px-2 py-0.5 rounded-full font-bold text-[9px] select-none shadow-sm flex-shrink-0 animate-pulse" title="Travelers' Choice - Lựa chọn của du khách">
+                      <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/></svg>
+                      Travelers' Choice
+                    </span>
+                  }
+                </h2>
+              </div>
+              <app-wishlist-toggle [placeId]="place()!.id" class="flex-shrink-0"></app-wishlist-toggle>
+            </div>
+            <p class="text-xs text-slate-400 truncate">{{ place()?.address }}</p>
+          </div>
+
+          <!-- Gallery Tabs selector -->
+          <div class="flex border-b border-slate-100 pb-1.5 gap-4 text-xs font-bold">
+            <button 
+              (click)="galleryTab.set('official')"
+              [class.text-cyan-600]="galleryTab() === 'official'"
+              [class.border-b-2]="galleryTab() === 'official'"
+              [class.border-cyan-500]="galleryTab() === 'official'"
+              [class.text-slate-400]="galleryTab() !== 'official'"
+              class="pb-1 transition duration-150 focus:outline-none"
+            >
+              Ảnh chính thức
+            </button>
+            <button 
+              (click)="galleryTab.set('traveler')"
+              [class.text-cyan-600]="galleryTab() === 'traveler'"
+              [class.border-b-2]="galleryTab() === 'traveler'"
+              [class.border-cyan-500]="galleryTab() === 'traveler'"
+              [class.text-slate-400]="galleryTab() !== 'traveler'"
+              class="pb-1 transition duration-150 focus:outline-none"
+            >
+              Du khách ({{ place()?.travelerPhotos?.length || 0 }})
+            </button>
+          </div>
+
+          <!-- Thumbnails grid -->
+          <div class="grid grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1">
+            @if (galleryTab() === 'official') {
+              @for (img of place()?.images || []; track img) {
+                <div 
+                  (click)="activeImage.set(img)"
+                  [class.ring-2]="activeImage() === img"
+                  [class.ring-cyan-400]="activeImage() === img"
+                  class="aspect-square rounded-xl overflow-hidden cursor-pointer bg-slate-100 hover:opacity-95 transition"
+                >
+                  <img [src]="img" alt="Gallery thumbnail" class="h-full w-full object-cover" />
+                </div>
+              }
+            } @else {
+              @for (img of place()?.travelerPhotos || []; track img) {
+                <div 
+                  (click)="activeImage.set(img)"
+                  [class.ring-2]="activeImage() === img"
+                  [class.ring-cyan-400]="activeImage() === img"
+                  class="aspect-square rounded-xl overflow-hidden cursor-pointer bg-slate-100 hover:opacity-95 transition"
+                >
+                  <img [src]="img" alt="Traveler photo" class="h-full w-full object-cover" />
+                </div>
+              } @empty {
+                <div class="col-span-3 text-center py-6 text-slate-400 text-[11px] font-bold">
+                  Chưa có ảnh từ du khách
+                </div>
+              }
+            }
+          </div>
+
+          <!-- Quick Rating Badge -->
+          <div class="bg-cyan-50 border border-cyan-150 rounded-[1.5rem] p-4 flex items-center justify-between shadow-inner">
+            <div>
+              <span class="text-[9px] font-bold text-slate-400 uppercase block tracking-wider">Đánh giá chung</span>
+              <span class="text-2xl font-black text-cyan-600">★ {{ place()?.ratingAverage }} / 5</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] font-bold text-slate-400 uppercase block tracking-wider">Khoảng giá</span>
+              <span class="text-sm font-black text-slate-700">{{ place()?.priceRange || 'Miễn phí' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Grid content -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Side: Main Info & Q&A (65% width) -->
+        <div class="lg:col-span-2 space-y-8">
+          
+          <!-- Place Description & Info Card -->
+          <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-8 shadow-sm">
+            <h3 class="text-xl font-black text-slate-900 mb-4 tracking-tight">Giới thiệu về địa điểm</h3>
+            <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-line font-medium mb-6">
+              {{ place()?.description || 'Hiện địa điểm này chưa được cập nhật giới thiệu chi tiết. Trải nghiệm du lịch đẳng cấp và độc đáo đang chờ đón bạn khám phá.' }}
+            </p>
+
+            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Tiện ích & dịch vụ nổi bật</h4>
+            <div class="flex flex-wrap gap-2">
+              @for (amenity of place()?.amenities || []; track amenity) {
+                <span class="bg-slate-50 border border-slate-200/50 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl uppercase tracking-wide">
+                  {{ amenity }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Place Questions & Answers Section -->
+          <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-8 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-xl font-black text-slate-900 tracking-tight">Hỏi & Đáp cộng đồng ({{ questions().length }})</h3>
+              @if (isLoadingQA()) {
+                <div class="h-4 w-4 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent"></div>
+              }
+            </div>
+
+            <!-- Submit Question Form -->
+            @if (isAuthenticated()) {
+              <form [formGroup]="questionForm" (ngSubmit)="submitQuestion()" class="mb-8 space-y-3">
+                <textarea 
+                  formControlName="content"
+                  rows="3" 
+                  class="glow-input w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white"
+                  placeholder="Hỏi cộng đồng về địa điểm này..."
+                ></textarea>
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] text-slate-400 font-bold">Hãy nhập ít nhất 10 ký tự</span>
+                  <button 
+                    type="submit" 
+                    [disabled]="questionForm.invalid"
+                    class="rounded-xl bg-slate-900 hover:bg-slate-800 px-5 py-2.5 text-xs font-bold text-white shadow transition disabled:opacity-50"
+                  >
+                    Gửi câu hỏi
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <div class="mb-8 rounded-2xl bg-slate-50 border border-slate-200/80 p-4 text-center">
+                <p class="text-xs font-bold text-slate-500">Đăng nhập tài khoản của bạn để tham gia Hỏi & Đáp.</p>
+              </div>
+            }
+
+            <!-- Questions Accordion list -->
+            @if (questions().length === 0) {
+              <div class="text-center py-6 text-slate-400 text-xs font-bold">
+                Chưa có câu hỏi nào. Hãy là người đầu tiên đặt câu hỏi!
+              </div>
+            } @else {
+              <div class="space-y-4">
+                @for (q of questions(); track q.id) {
+                  <div class="border border-slate-200/60 rounded-2xl p-4 bg-slate-50/20 hover:border-slate-300/80 transition duration-300">
+                    
+                    <!-- Question User details & Header -->
+                    <div class="flex justify-between items-start gap-4">
+                      <div class="flex items-center gap-3">
+                        <div class="h-8 w-8 overflow-hidden rounded-full border border-slate-200 bg-slate-200 flex-shrink-0">
+                          @if (q.user.avatarUrl) {
+                            <img [src]="q.user.avatarUrl" alt="Avatar" class="h-full w-full object-cover">
+                          } @else {
+                            <div class="h-full w-full bg-slate-200 text-xs font-bold text-slate-500 flex items-center justify-center">
+                              {{ q.user.fullName.charAt(0) }}
+                            </div>
+                          }
+                        </div>
+                        <div>
+                          <h5 class="text-xs font-black text-slate-800 leading-none">{{ q.user.fullName }}</h5>
+                          <span class="text-[9px] text-slate-400 font-bold block mt-1">{{ q.createdAt | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        (click)="toggleQuestion(q.id)"
+                        class="text-xs font-bold text-cyan-600 hover:text-cyan-700 transition"
+                      >
+                        {{ expandedQuestions()[q.id] ? 'Thu gọn' : 'Xem câu trả lời (' + q.answers.length + ')' }}
+                      </button>
+                    </div>
+
+                    <!-- Question Content -->
+                    <p class="text-xs font-bold text-slate-800 mt-3 leading-relaxed">
+                      {{ q.content }}
+                    </p>
+
+                    <!-- Expandable accordion block -->
+                    @if (expandedQuestions()[q.id]) {
+                      <div class="mt-4 pt-4 border-t border-slate-100 space-y-4 animate-fade-in">
+                        
+                        <!-- Answers List -->
+                        @if (q.answers.length === 0) {
+                          <p class="text-[10px] text-slate-400 font-bold italic pl-4">Địa điểm này chưa có câu trả lời.</p>
+                        } @else {
+                          <div class="space-y-3 pl-4 border-l-2 border-slate-200">
+                            @for (ans of q.answers; track ans.id) {
+                              <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                  <span class="text-xs font-black text-slate-800 leading-none">{{ ans.user.fullName }}</span>
+                                  <span class="text-[9px] text-slate-400 font-bold">{{ ans.createdAt | date:'dd/MM/yyyy' }}</span>
+                                </div>
+                                <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                                  {{ ans.content }}
+                                </p>
+                              </div>
+                            }
+                          </div>
+                        }
+
+                        <!-- Write Answer Form -->
+                        @if (isAuthenticated()) {
+                          <div class="pt-3">
+                            @if (activeAnswerQid() === q.id) {
+                              <form [formGroup]="answerForm" (ngSubmit)="submitAnswer(q.id)" class="space-y-2">
+                                <textarea 
+                                  formControlName="content"
+                                  rows="2" 
+                                  class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white"
+                                  placeholder="Viết câu trả lời của bạn..."
+                                ></textarea>
+                                <div class="flex justify-end gap-2">
+                                  <button 
+                                    type="button" 
+                                    (click)="activeAnswerQid.set(null)"
+                                    class="rounded-lg bg-slate-100 hover:bg-slate-200 px-4 py-2 text-[10px] font-bold text-slate-600 transition"
+                                  >
+                                    Hủy
+                                  </button>
+                                  <button 
+                                    type="submit" 
+                                    [disabled]="answerForm.invalid"
+                                    class="rounded-lg bg-slate-900 hover:bg-slate-800 px-4 py-2 text-[10px] font-bold text-white transition disabled:opacity-50"
+                                  >
+                                    Trả lời
+                                  </button>
+                                </div>
+                              </form>
+                            } @else {
+                              <button 
+                                type="button"
+                                (click)="openAnswerForm(q.id)"
+                                class="text-[10px] font-black text-indigo-600 hover:text-indigo-700 transition flex items-center gap-1"
+                              >
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                <span>Trả lời câu hỏi này</span>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Reviews & Ratings Engine -->
+          <app-review-list [placeId]="place()!.id"></app-review-list>
+        </div>
+
+        <!-- Right Side: Suggest Edit Form (35% width) -->
+        <div class="space-y-8">
+          <app-price-comparison [placeId]="place()!.id"></app-price-comparison>
+
+          <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-8 shadow-sm">
+            <h3 class="text-lg font-black text-slate-900 mb-2 tracking-tight">Đóng góp chỉnh sửa</h3>
+            <p class="text-xs text-slate-400 font-semibold mb-6">Bạn phát hiện thông tin không chính xác? Hãy gửi đề xuất chỉnh sửa để cộng đồng du lịch cùng cập nhật.</p>
+
+            @if (isAuthenticated()) {
+              <form class="space-y-4" [formGroup]="editForm" (ngSubmit)="submitEditSuggestion()">
+                <!-- Name input -->
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Tên địa điểm</label>
+                  <input 
+                    type="text" 
+                    formControlName="name"
+                    class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-semibold"
+                  />
+                </div>
+
+                <!-- Address input -->
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Địa chỉ chính xác</label>
+                  <input 
+                    type="text" 
+                    formControlName="address"
+                    class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-semibold"
+                  />
+                </div>
+
+                <!-- Price Range input -->
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Khoảng giá hiển thị</label>
+                  <input 
+                    type="text" 
+                    formControlName="priceRange"
+                    class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-semibold"
+                    placeholder="Ví dụ: 100.000 đ - 500.000 đ"
+                  />
+                </div>
+
+                <!-- Description input -->
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Giới thiệu sửa đổi</label>
+                  <textarea 
+                    formControlName="description"
+                    rows="4"
+                    class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-medium"
+                  ></textarea>
+                </div>
+
+                <!-- Messages -->
+                @if (editSuccessMessage()) {
+                  <p class="text-xs text-emerald-600 font-bold">{{ editSuccessMessage() }}</p>
+                }
+                @if (editErrorMessage()) {
+                  <p class="text-xs text-rose-600 font-bold">{{ editErrorMessage() }}</p>
+                }
+
+                <button 
+                  type="submit"
+                  [disabled]="isSubmittingEdit() || editForm.invalid"
+                  class="w-full rounded-xl bg-slate-900 hover:bg-slate-800 py-3 font-bold text-xs text-white shadow transition disabled:opacity-50 mt-4"
+                >
+                  {{ isSubmittingEdit() ? 'Đang gửi đề xuất...' : 'Gửi đề xuất chỉnh sửa' }}
+                </button>
+              </form>
+            } @else {
+              <div class="rounded-2xl bg-slate-50 border border-slate-200/80 p-6 text-center">
+                <p class="text-xs font-bold text-slate-500">Đăng nhập tài khoản của bạn để gửi đề xuất chỉnh sửa thông tin.</p>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  }
+</div>

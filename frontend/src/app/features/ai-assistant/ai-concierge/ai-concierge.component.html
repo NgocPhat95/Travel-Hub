@@ -1,0 +1,125 @@
+<!-- Floating Chatbot Toggle Button -->
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+  
+  <!-- Chat Window (Glassmorphism) -->
+  @if (isOpen()) {
+    <div class="mb-4 w-[380px] h-[520px] max-h-[80vh] flex flex-col bg-white/90 backdrop-blur-lg border border-slate-200/50 shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 transform scale-100 origin-bottom-right">
+      
+      <!-- Chat Header -->
+      <div class="bg-gradient-to-r from-indigo-600 to-cyan-500 text-white px-4 py-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-2.5">
+          <!-- Small Glow Icon in Header -->
+          <div class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-400"></span>
+          </div>
+          <div>
+            <h4 class="text-sm font-black tracking-tight">AI Concierge</h4>
+            <p class="text-[10px] text-cyan-100 font-medium">Trợ lý du lịch trực tuyến</p>
+          </div>
+        </div>
+        <button (click)="toggleChat()" class="text-white/80 hover:text-white transition duration-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Messages Body -->
+      <div #scrollContainer class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 scroll-smooth">
+        @for (msg of messages(); track $index) {
+          <div class="flex" [ngClass]="{'justify-end': msg.role === 'user', 'justify-start': msg.role === 'model'}">
+            
+            <!-- AI Avatar (only for model responses) -->
+            @if (msg.role === 'model') {
+              <div class="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-500 text-white flex items-center justify-center font-bold text-xs mr-2 shadow-sm flex-shrink-0">
+                AI
+              </div>
+            }
+
+            <!-- Message Bubble -->
+            <div 
+              class="max-w-[75%] px-4 py-2.5 rounded-2xl shadow-sm text-sm"
+              [ngClass]="{
+                'bg-indigo-600 text-white rounded-tr-none': msg.role === 'user',
+                'bg-white text-slate-800 border border-slate-200/60 rounded-tl-none': msg.role === 'model'
+              }"
+            >
+              <p class="whitespace-pre-wrap leading-relaxed">{{ msg.parts }}</p>
+            </div>
+
+            <!-- User Avatar (only for user messages) -->
+            @if (msg.role === 'user') {
+              <div class="h-8 w-8 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-xs ml-2 shadow-sm flex-shrink-0 overflow-hidden">
+                @if (isAuthenticated() && user()?.avatarUrl) {
+                  <img [src]="user()?.avatarUrl!" alt="Avatar" class="h-full w-full object-cover">
+                } @else {
+                  {{ user()?.fullName?.charAt(0) || 'U' }}
+                }
+              </div>
+            }
+
+          </div>
+        }
+
+        <!-- AI Typing Indicator -->
+        @if (isLoading()) {
+          <div class="flex justify-start">
+            <div class="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-500 text-white flex items-center justify-center font-bold text-xs mr-2 shadow-sm flex-shrink-0">
+              AI
+            </div>
+            <div class="bg-white border border-slate-200/60 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1">
+              <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+              <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+              <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Input Footer -->
+      <form (ngSubmit)="sendMessage()" class="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
+        <input 
+          type="text" 
+          [(ngModel)]="messageText" 
+          name="chatInput"
+          placeholder="Nhập tin nhắn..." 
+          class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:bg-white focus:border-cyan-400 transition"
+          [disabled]="isLoading()"
+          autocomplete="off"
+        />
+        <button 
+          type="submit" 
+          [disabled]="!messageText.trim() || isLoading()"
+          class="h-9 w-9 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white flex items-center justify-center rounded-xl shadow-sm transition active:scale-95"
+        >
+          <svg class="w-4 h-4 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+  }
+
+  <!-- Toggle Button with Pulsing Glow Ring -->
+  <button 
+    (click)="toggleChat()"
+    class="relative h-14 w-14 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-[#01FCEF] text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 group z-50"
+  >
+    <!-- Cyan Halo Pulse Ring -->
+    <span class="absolute inset-0 rounded-full bg-[#01FCEF] opacity-40 animate-ping scale-110 pointer-events-none group-hover:opacity-60"></span>
+    <span class="absolute -inset-1 rounded-full border border-cyan-400/30 opacity-75 blur-[2px] animate-pulse"></span>
+    
+    <!-- Inner Chat Icon -->
+    @if (isOpen()) {
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    } @else {
+      <!-- Robot / Sparkles AI Icon -->
+      <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+      </svg>
+    }
+  </button>
+</div>

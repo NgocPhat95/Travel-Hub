@@ -1,0 +1,152 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 py-10">
+  <div
+    class="relative w-full max-w-md overflow-hidden rounded-[2.5rem] border border-white/20 bg-white/80 p-8 text-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+    [class.shake-animation]="hasError()"
+  >
+    <!-- Background Blur Decorative Element -->
+    <div class="absolute -top-32 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-cyan-300/40 blur-3xl"></div>
+
+    <button
+      type="button"
+      class="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/70 text-slate-700 transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none"
+      (click)="close.emit()"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+
+    <div class="relative mb-6 text-center">
+      <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+        @if (isLoginMode()) { Chào mừng quay lại }
+        @else if (isRegisterMode()) { Tạo tài khoản mới }
+        @else { Khôi phục mật khẩu }
+      </h2>
+      <p class="mt-2 text-sm text-slate-600">
+        @if (isLoginMode()) { Đăng nhập để tiếp tục hành trình khám phá Travel Hub }
+        @else if (isRegisterMode()) { Tạo tài khoản để kết nối với cộng đồng du lịch }
+        @else { Nhập email của bạn để nhận liên kết khôi phục mật khẩu }
+      </p>
+    </div>
+
+    <!-- Google Authentication Option (Top Position - TripAdvisor Style) -->
+    @if (!isForgotMode()) {
+      <button
+        type="button"
+        class="relative flex w-full items-center justify-center gap-3 rounded-2xl border border-white/60 bg-white/70 px-4 py-3.5 text-sm font-bold text-slate-800 shadow-[0_16px_35px_rgba(8,112,184,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_45px_rgba(8,112,184,0.15)] mb-6"
+        (click)="loginWithGoogle()"
+      >
+        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm">
+          <svg viewBox="0 0 48 48" class="h-4 w-4">
+            <path
+              fill="#EA4335"
+              d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.9-6.9C36.2 2.3 30.5 0 24 0 14.6 0 6.5 5.4 2.6 13.2l8.1 6.3C12.5 13.1 17.8 9.5 24 9.5z"
+            />
+            <path
+              fill="#34A853"
+              d="M46.5 24.5c0-1.7-.2-3.4-.5-5H24v9.5h12.6c-.6 3-2.3 5.6-4.7 7.4l7.3 5.7c4.3-4 7.3-9.9 7.3-17.6z"
+            />
+            <path
+              fill="#4A90E2"
+              d="M10.7 28.5a14.5 14.5 0 0 1 0-9l-8.1-6.3C.9 16.2 0 20 0 24s.9 7.8 2.6 10.8l8.1-6.3z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M24 48c6.5 0 12.2-2.1 16.3-5.7l-7.3-5.7c-2 1.4-4.6 2.2-9 2.2-6.2 0-11.5-3.6-13.3-8.8l-8.1 6.3C6.5 42.6 14.6 48 24 48z"
+            />
+          </svg>
+        </span>
+        Đăng nhập với Google
+      </button>
+
+      <div class="relative mb-6 flex items-center justify-center">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+        <span class="relative bg-white/80 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Hoặc</span>
+      </div>
+    }
+
+    <form class="relative space-y-5" (ngSubmit)="submit()" [formGroup]="form">
+      <!-- Full Name (Register Only) -->
+      @if (isRegisterMode()) {
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-slate-700">Họ và tên</label>
+          <input
+            type="text"
+            formControlName="fullName"
+            class="glow-input w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm shadow-inner outline-none placeholder-slate-400 focus:border-cyan-300"
+            placeholder="Nguyễn Văn A"
+          />
+        </div>
+      }
+
+      <!-- Email (All Modes) -->
+      <div class="space-y-2">
+        <label class="text-sm font-semibold text-slate-700">Email</label>
+        <input
+          type="email"
+          formControlName="email"
+          class="glow-input w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm shadow-inner outline-none placeholder-slate-400 focus:border-cyan-300"
+          placeholder="username@gmail.com"
+        />
+      </div>
+
+      <!-- Password (Login & Register Only) -->
+      @if (!isForgotMode()) {
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-slate-700">Mật khẩu</label>
+          <input
+            type="password"
+            formControlName="password"
+            class="glow-input w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm shadow-inner outline-none placeholder-slate-400 focus:border-cyan-300"
+            placeholder="••••••••"
+          />
+        </div>
+      }
+
+      <!-- Messages -->
+      @if (errorMessage()) {
+        <p class="text-sm font-medium text-rose-600 transition-all duration-300">
+          {{ errorMessage() }}
+        </p>
+      }
+      @if (successMessage()) {
+        <p class="text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl p-3 transition-all duration-300">
+          {{ successMessage() }}
+        </p>
+      }
+
+      <button
+        type="submit"
+        class="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(15,23,42,0.35)] disabled:opacity-50"
+        [disabled]="isSubmitting()"
+      >
+        <span>
+          @if (isSubmitting()) { Đang xử lý... }
+          @else if (isLoginMode()) { Đăng nhập }
+          @else if (isRegisterMode()) { Đăng ký }
+          @else { Gửi yêu cầu }
+        </span>
+      </button>
+    </form>
+
+    <!-- Link Toggles -->
+    <div class="mt-6 flex flex-col items-center gap-3 text-sm">
+      @if (isLoginMode()) {
+        <button type="button" class="font-semibold text-slate-800 hover:underline" (click)="setMode('register')">
+          Chưa có tài khoản? Đăng ký ngay
+        </button>
+        <button type="button" class="text-xs font-medium text-slate-500 hover:text-slate-800" (click)="setMode('forgot')">
+          Quên mật khẩu?
+        </button>
+      } @else if (isRegisterMode()) {
+        <button type="button" class="font-semibold text-slate-800 hover:underline" (click)="setMode('login')">
+          Đã có tài khoản? Đăng nhập ngay
+        </button>
+      } @else {
+        <button type="button" class="font-semibold text-slate-800 hover:underline flex items-center gap-1" (click)="setMode('login')">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Quay lại đăng nhập
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
