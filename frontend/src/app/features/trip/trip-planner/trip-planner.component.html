@@ -19,45 +19,60 @@
       }
     </div>
 
-    <!-- Active Collaborators list -->
-    <div class="flex items-center gap-2">
-      <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mr-2">Cộng tác viên</span>
-      <div class="flex -space-x-2 overflow-hidden">
-        <!-- Owner Avatar -->
-        <div 
-          [title]="trip()?.owner?.fullName + ' (Chủ chuyến đi)'"
-          class="inline-block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden bg-slate-200 cursor-pointer"
-        >
-          @if (trip()?.owner?.avatarUrl) {
-            <img [src]="trip()?.owner?.avatarUrl" alt="Avatar" class="h-full w-full object-cover">
-          } @else {
-            <div class="h-full w-full flex items-center justify-center bg-slate-300 text-xs font-black text-slate-600">
-              {{ trip()?.owner?.fullName?.charAt(0) }}
+    <!-- Active Collaborators list & Action Buttons -->
+    <div class="flex flex-wrap items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mr-2">Cộng tác viên</span>
+        <div class="flex -space-x-2 overflow-hidden">
+          <!-- Owner Avatar -->
+          <div 
+            [title]="trip()?.owner?.fullName + ' (Chủ chuyến đi)'"
+            class="inline-block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden bg-slate-200 cursor-pointer"
+          >
+            @if (trip()?.owner?.avatarUrl) {
+              <img [src]="trip()?.owner?.avatarUrl" alt="Avatar" class="h-full w-full object-cover">
+            } @else {
+              <div class="h-full w-full flex items-center justify-center bg-slate-300 text-xs font-black text-slate-600">
+                {{ trip()?.owner?.fullName?.charAt(0) }}
+              </div>
+            }
+          </div>
+          
+          <!-- Collaborators Avatars -->
+          @for (collab of collaborators(); track collab.id) {
+            <div 
+              [title]="collab.user.fullName + ' (' + (collab.role === 'EDITOR' ? 'Chỉnh sửa' : 'Xem') + ')'"
+              class="inline-block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden bg-slate-200 cursor-pointer relative"
+            >
+              @if (collab.user.avatarUrl) {
+                <img [src]="collab.user.avatarUrl" alt="Avatar" class="h-full w-full object-cover">
+              } @else {
+                <div class="h-full w-full flex items-center justify-center bg-indigo-100 text-xs font-black text-indigo-650">
+                  {{ collab.user.fullName.charAt(0) }}
+                </div>
+              }
+              <span 
+                [class.bg-emerald-500]="collab.role === 'EDITOR'"
+                [class.bg-slate-400]="collab.role === 'VIEWER'"
+                class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white"
+              ></span>
             </div>
           }
         </div>
-        
-        <!-- Collaborators Avatars -->
-        @for (collab of collaborators(); track collab.id) {
-          <div 
-            [title]="collab.user.fullName + ' (' + (collab.role === 'EDITOR' ? 'Chỉnh sửa' : 'Xem') + ')'"
-            class="inline-block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden bg-slate-200 cursor-pointer relative"
-          >
-            @if (collab.user.avatarUrl) {
-              <img [src]="collab.user.avatarUrl" alt="Avatar" class="h-full w-full object-cover">
-            } @else {
-              <div class="h-full w-full flex items-center justify-center bg-indigo-100 text-xs font-black text-indigo-600">
-                {{ collab.user.fullName.charAt(0) }}
-              </div>
-            }
-            <span 
-              [class.bg-emerald-500]="collab.role === 'EDITOR'"
-              [class.bg-slate-400]="collab.role === 'VIEWER'"
-              class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white"
-            ></span>
-          </div>
-        }
       </div>
+
+      <!-- Delete Button (Only for Owner) -->
+      @if (trip()?.ownerId === currentUser()?.id) {
+        <button 
+          (click)="deleteTrip()"
+          class="inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-605 border border-rose-100 hover:border-rose-200 text-xs font-black transition-all duration-200 active:scale-95 shadow-sm"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-rose-500">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+          </svg>
+          Xóa chuyến đi
+        </button>
+      }
     </div>
   </div>
 
@@ -68,242 +83,286 @@
     </div>
   } @else {
     <!-- Main Planning Workspace -->
-    <div class="max-w-7xl mx-auto px-6 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="max-w-7xl mx-auto px-6 mt-6">
       
-      <!-- LEFT SIDEBAR: Wishlist / Saved Places (3 cols) -->
-      <div class="lg:col-span-3 space-y-6">
-        <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-6 shadow-sm">
-          <h3 class="text-sm font-black text-slate-800 tracking-tight mb-4 flex items-center gap-1.5">
-            <svg class="w-5 h-5 text-rose-500 fill-current" viewBox="0 0 24 24">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-            <span>Địa điểm yêu thích</span>
-          </h3>
-
-          <div 
-            id="wishlist-list"
-            cdkDropList
-            [cdkDropListData]="wishlist()"
-            [cdkDropListConnectedTo]="dropListIds"
-            class="space-y-3 min-h-[300px]"
-            (cdkDropListDropped)="drop($event)"
-          >
-            @if (wishlist().length === 0) {
-              <div class="text-center py-12 text-slate-400 text-xs font-bold border border-dashed border-slate-200 rounded-3xl p-4">
-                Chưa lưu địa điểm nào. Hãy tìm kiếm và bấm lưu trái tim!
-              </div>
-            }
-
-            @for (place of wishlist(); track place.id) {
-              <div 
-                cdkDrag 
-                [cdkDragData]="place"
-                class="wishlist-card bg-slate-50 hover:bg-white border border-slate-200/60 hover:border-cyan-300 p-3 rounded-2xl cursor-grab active:cursor-grabbing transition duration-300 flex items-center gap-3 relative shadow-inner hover:shadow-md"
-              >
-                <div class="h-10 w-10 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                  <img [src]="place.avatarUrl" alt="Place Thumbnail" class="h-full w-full object-cover" />
-                </div>
-                <div class="min-w-0 flex-grow">
-                  <h4 class="text-xs font-black text-slate-800 truncate leading-tight">{{ place.name }}</h4>
-                  <span class="text-[9px] font-bold text-slate-400 block mt-0.5">{{ place.category }}</span>
-                </div>
-                <div class="cdk-drag-placeholder" *cdkDragPlaceholder></div>
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- Add Collaborator Box (Only for Owner) -->
-        @if (trip()?.ownerId === currentUser()?.id) {
-          <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-6 shadow-sm">
-            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Thêm cộng tác viên</h3>
-            
-            <form [formGroup]="collabForm" (ngSubmit)="addCollaborator()" class="space-y-3">
-              <input 
-                type="email" 
-                formControlName="email"
-                placeholder="Nhập email tài khoản..."
-                class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-350 focus:bg-white font-medium"
-              />
-              
-              <div class="flex gap-2">
-                <select 
-                  formControlName="role"
-                  class="glow-input rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 outline-none focus:border-cyan-350 focus:bg-white font-bold"
-                >
-                  <option value="EDITOR">EDITOR (Chỉnh sửa)</option>
-                  <option value="VIEWER">VIEWER (Chỉ xem)</option>
-                </select>
-
-                <button 
-                  type="submit" 
-                  [disabled]="collabForm.invalid"
-                  class="flex-grow rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 shadow transition disabled:opacity-50"
-                >
-                  Mời
-                </button>
-              </div>
-
-              @if (collabError()) {
-                <p class="text-[10px] text-rose-500 font-bold mt-1">{{ collabError() }}</p>
-              }
-              @if (collabSuccess()) {
-                <p class="text-[10px] text-emerald-500 font-bold mt-1">{{ collabSuccess() }}</p>
-              }
-            </form>
-
-            <!-- Active Collab management list -->
-            @if (collaborators().length > 0) {
-              <div class="border-t border-slate-100 mt-4 pt-4 space-y-2">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Quản lý</span>
-                @for (c of collaborators(); track c.id) {
-                  <div class="flex justify-between items-center text-xs font-bold text-slate-600">
-                    <span class="truncate max-w-[150px]">{{ c.user.fullName }}</span>
-                    <button 
-                      (click)="removeCollaborator(c.userId)"
-                      class="text-rose-500 hover:text-rose-600 text-[10px]"
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        }
-      </div>
-
-      <!-- MIDDLE ITINERARY BOARD: Kanban columns (6 cols) -->
-      <div class="lg:col-span-6 space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Day Picker Tab view / Navigation -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          @for (day of days(); track day) {
-            <button 
-              (click)="activeDay.set(day)"
-              [class.bg-cyan-500]="activeDay() === day"
-              [class.text-white]="activeDay() === day"
-              [class.bg-white]="activeDay() !== day"
-              [class.text-slate-700]="activeDay() !== day"
-              class="rounded-xl border border-slate-200/60 px-4 py-2 text-xs font-black shadow-sm transition hover:scale-105 flex-shrink-0"
-            >
-              Ngày {{ day }}
-            </button>
-          }
-        </div>
+        <!-- LEFT SIDEBAR: Wishlist / Saved Places (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+          <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-6 shadow-sm">
+            <h3 class="text-sm font-black text-slate-800 tracking-tight mb-3 flex items-center gap-1.5">
+              <svg class="w-5 h-5 text-rose-500 fill-current" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              <span>Địa điểm yêu thích</span>
+            </h3>
 
-        <!-- Kanban Board Layout -->
-        <div class="grid grid-cols-1 gap-6">
-          <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-6 shadow-sm min-h-[500px]">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-sm font-black text-slate-800 tracking-tight leading-none">
-                Lịch trình chi tiết: Ngày {{ activeDay() }}
-              </h3>
-              <span class="text-[10px] text-slate-400 font-bold block">
-                Kéo thả các thẻ vào hoặc xếp thứ tự điểm đi
-              </span>
+            <!-- Sleek Search Input -->
+            <div class="relative mb-4">
+              <div class="relative">
+                <input 
+                  type="text" 
+                  [formControl]="searchInput"
+                  placeholder="Tìm địa điểm để thêm..."
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2.5 text-xs text-slate-800 font-semibold outline-none focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-50 transition duration-300"
+                />
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-405">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                </span>
+              </div>
+
+              <!-- Search Dropdown Suggestions -->
+              <div 
+                *ngIf="searchResults().length > 0" 
+                class="absolute left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-white border border-slate-200/80 rounded-2xl shadow-xl z-30 divide-y divide-slate-50 animate-scale-in"
+              >
+                <div 
+                  *ngFor="let place of searchResults()"
+                  (click)="addPlaceToWishlist(place)"
+                  class="p-3 hover:bg-slate-50 cursor-pointer transition flex items-center gap-3"
+                >
+                  <div class="h-8 w-8 rounded-lg overflow-hidden bg-slate-105 flex-shrink-0">
+                    <img [src]="place.images?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=80&q=80'" class="h-full w-full object-cover" />
+                  </div>
+                  <div class="min-w-0 flex-grow">
+                    <h4 class="text-xs font-black text-slate-800 truncate leading-tight">{{ place.name }}</h4>
+                    <span class="text-[9px] font-bold text-slate-400 block mt-0.5 truncate">{{ place.address }}</span>
+                  </div>
+                  <button class="p-1.5 rounded-lg bg-cyan-50 text-cyan-600 hover:bg-cyan-100 hover:text-cyan-700 transition flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <!-- cdkDropList day column -->
             <div 
-              [id]="'day-list-' + activeDay()"
+              id="wishlist-list"
               cdkDropList
-              [cdkDropListData]="dayItems()[activeDay()] || []"
+              [cdkDropListData]="wishlist()"
               [cdkDropListConnectedTo]="dropListIds"
-              class="space-y-4 min-h-[400px] bg-slate-50/50 border border-slate-200/40 rounded-3xl p-4 shadow-inner"
-              (cdkDropListDropped)="drop($event, activeDay())"
+              class="space-y-3 min-h-[200px]"
+              (cdkDropListDropped)="drop($event)"
             >
-              @if ((dayItems()[activeDay()] || []).length === 0) {
-                <div class="text-center py-24 text-slate-400 text-xs font-bold border-2 border-dashed border-slate-200 rounded-3xl p-6">
-                  Ngày {{ activeDay() }} chưa có lịch trình.
-                  <p class="text-[10px] font-medium text-slate-400 mt-2">Kéo địa điểm từ cột yêu thích vào đây!</p>
+              @if (wishlist().length === 0) {
+                <div class="text-center py-10 text-slate-400 text-xs font-bold border border-dashed border-slate-200 rounded-3xl p-4">
+                  Chưa lưu địa điểm nào. Hãy nhập tìm kiếm ở ô trên để thêm nhanh địa điểm!
                 </div>
               }
 
-              @for (item of dayItems()[activeDay()] || []; track item.id; let idx = $index) {
+              @for (place of wishlist(); track place.id) {
                 <div 
-                  cdkDrag
-                  (cdkDragStarted)="onDragStarted(item.id)"
-                  [cdkDragData]="item"
-                  class="itinerary-card bg-white border border-slate-200/60 hover:border-indigo-200 p-4 rounded-[1.5rem] cursor-grab active:cursor-grabbing transition duration-300 relative shadow-sm hover:shadow-md"
+                  cdkDrag 
+                  [cdkDragData]="place"
+                  class="wishlist-card bg-slate-50 hover:bg-white border border-slate-200/60 hover:border-cyan-300 p-3 rounded-2xl cursor-grab active:cursor-grabbing transition duration-300 flex items-center gap-3 relative shadow-inner hover:shadow-md"
                 >
-                  <!-- Drag Indicator & Index numbering -->
-                  <div class="flex justify-between items-start gap-4 mb-3">
-                    <div class="flex items-center gap-2">
-                      <span class="h-6 w-6 rounded-full bg-slate-900 text-white font-black text-[10px] flex items-center justify-center select-none">
-                        {{ idx + 1 }}
-                      </span>
-                      <div>
-                        <h4 class="text-xs font-black text-slate-800 leading-tight">{{ item.place.name }}</h4>
-                        <span class="text-[9px] font-bold text-slate-400 block mt-0.5 uppercase tracking-wide">
-                          {{ item.place.category }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Delete button -->
-                    <button 
-                      (click)="deleteItem(item.id, activeDay())"
-                      class="text-slate-350 hover:text-rose-500 transition focus:outline-none"
-                      title="Xóa địa điểm khỏi ngày này"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
-                    </button>
+                  <div class="h-10 w-10 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                    <img [src]="place.images?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=80&q=80'" alt="Place Thumbnail" class="h-full w-full object-cover" />
                   </div>
-
-                  <!-- Optional Note Display -->
-                  @if (item.note) {
-                    <p class="text-[10px] text-slate-500 bg-slate-50 rounded-xl p-2 font-medium italic mb-2 border border-slate-150">
-                      "{{ item.note }}"
-                    </p>
-                  }
-
-                  <!-- Collaborator Dragging Overlay Avatar -->
-                  @if (draggingCollaborators()[item.id]) {
-                    <div 
-                      [title]="draggingCollaborators()[item.id].userName + ' đang kéo...'"
-                      class="absolute top-2 right-10 flex items-center gap-1.5 bg-cyan-400 border border-white rounded-full p-0.5 pr-2.5 shadow-md animate-bounce collaborator-drag-avatar select-none"
-                    >
-                      <div class="h-5 w-5 rounded-full overflow-hidden bg-slate-200">
-                        @if (draggingCollaborators()[item.id].userAvatar) {
-                          <img [src]="draggingCollaborators()[item.id].userAvatar" alt="Avatar" class="h-full w-full object-cover">
-                        } @else {
-                          <div class="h-full w-full flex items-center justify-center bg-cyan-200 text-[8px] font-black text-cyan-600">
-                            {{ draggingCollaborators()[item.id].userName.charAt(0) }}
-                          </div>
-                        }
-                      </div>
-                      <span class="text-[8px] font-black text-white uppercase tracking-wider">Đang kéo...</span>
-                    </div>
-                  }
-                  
+                  <div class="min-w-0 flex-grow">
+                    <h4 class="text-xs font-black text-slate-800 truncate leading-tight">{{ place.name }}</h4>
+                    <span class="text-[9px] font-bold text-slate-400 block mt-0.5">{{ place.category }}</span>
+                  </div>
                   <div class="cdk-drag-placeholder" *cdkDragPlaceholder></div>
                 </div>
               }
-
             </div>
           </div>
+
+          <!-- Add Collaborator Box (Only for Owner) -->
+          @if (trip()?.ownerId === currentUser()?.id) {
+            <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-6 shadow-sm">
+              <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Thêm cộng tác viên</h3>
+              
+              <form [formGroup]="collabForm" (ngSubmit)="addCollaborator()" class="space-y-3">
+                <input 
+                  type="email" 
+                  formControlName="email"
+                  placeholder="Nhập email tài khoản..."
+                  class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-350 focus:bg-white font-medium"
+                />
+                
+                <div class="flex gap-2">
+                  <select 
+                    formControlName="role"
+                    class="glow-input rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 outline-none focus:border-cyan-350 focus:bg-white font-bold"
+                  >
+                    <option value="EDITOR">EDITOR (Chỉnh sửa)</option>
+                    <option value="VIEWER">VIEWER (Chỉ xem)</option>
+                  </select>
+
+                  <button 
+                    type="submit" 
+                    [disabled]="collabForm.invalid"
+                    class="flex-grow rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 shadow transition disabled:opacity-50"
+                  >
+                    Mời
+                  </button>
+                </div>
+
+                @if (collabError()) {
+                  <p class="text-[10px] text-rose-500 font-bold mt-1">{{ collabError() }}</p>
+                }
+                @if (collabSuccess()) {
+                  <p class="text-[10px] text-emerald-500 font-bold mt-1">{{ collabSuccess() }}</p>
+                }
+              </form>
+
+              <!-- Active Collab management list -->
+              @if (collaborators().length > 0) {
+                <div class="border-t border-slate-100 mt-4 pt-4 space-y-2">
+                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Quản lý</span>
+                  @for (c of collaborators(); track c.id) {
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-600">
+                      <span class="truncate max-w-[150px]">{{ c.user.fullName }}</span>
+                      <button 
+                        (click)="removeCollaborator(c.userId)"
+                        class="text-rose-500 hover:text-rose-600 text-[10px]"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- MIDDLE ITINERARY BOARD: Kanban columns (8 cols) -->
+        <div class="lg:col-span-8 space-y-6">
+          
+          <!-- Day Picker Tab view / Navigation -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            @for (day of days(); track day) {
+              <button 
+                (click)="activeDay.set(day)"
+                [class.bg-cyan-500]="activeDay() === day"
+                [class.text-white]="activeDay() === day"
+                [class.bg-white]="activeDay() !== day"
+                [class.text-slate-700]="activeDay() !== day"
+                class="rounded-xl border border-slate-200/60 px-4 py-2 text-xs font-black shadow-sm transition hover:scale-105 flex-shrink-0"
+              >
+                Ngày {{ day }}
+              </button>
+            }
+          </div>
+
+          <!-- Kanban Board Layout -->
+          <div class="grid grid-cols-1 gap-6">
+            <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-6 shadow-sm min-h-[500px]">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-black text-slate-800 tracking-tight leading-none">
+                  Lịch trình chi tiết: Ngày {{ activeDay() }}
+                </h3>
+                <span class="text-[10px] text-slate-400 font-bold block">
+                  Kéo thả các thẻ vào hoặc xếp thứ tự điểm đi
+                </span>
+              </div>
+
+              <!-- cdkDropList day column -->
+              <div 
+                [id]="'day-list-' + activeDay()"
+                cdkDropList
+                [cdkDropListData]="dayItems()[activeDay()] || []"
+                [cdkDropListConnectedTo]="dropListIds"
+                class="space-y-4 min-h-[400px] bg-slate-50/50 border border-slate-200/40 rounded-3xl p-4 shadow-inner"
+                (cdkDropListDropped)="drop($event, activeDay())"
+              >
+                @if ((dayItems()[activeDay()] || []).length === 0) {
+                  <div class="text-center py-24 text-slate-400 text-xs font-bold border-2 border-dashed border-slate-200 rounded-3xl p-6">
+                    Ngày {{ activeDay() }} chưa có lịch trình.
+                    <p class="text-[10px] font-medium text-slate-400 mt-2">Kéo địa điểm từ cột yêu thích vào đây!</p>
+                  </div>
+                }
+
+                @for (item of dayItems()[activeDay()] || []; track item.id; let idx = $index) {
+                  <div 
+                    cdkDrag
+                    (cdkDragStarted)="onDragStarted(item.id)"
+                    [cdkDragData]="item"
+                    class="itinerary-card bg-white border border-slate-200/60 hover:border-indigo-200 p-4 rounded-[1.5rem] cursor-grab active:cursor-grabbing transition duration-300 relative shadow-sm hover:shadow-md"
+                  >
+                    <!-- Drag Indicator & Index numbering -->
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                      <div class="flex items-center gap-2">
+                        <span class="h-6 w-6 rounded-full bg-slate-900 text-white font-black text-[10px] flex items-center justify-center select-none">
+                          {{ idx + 1 }}
+                        </span>
+                        <div>
+                          <h4 class="text-xs font-black text-slate-800 leading-tight">{{ item.place.name }}</h4>
+                          <span class="text-[9px] font-bold text-slate-400 block mt-0.5 uppercase tracking-wide">
+                            {{ item.place.category }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Delete button -->
+                      <button 
+                        (click)="deleteItem(item.id, activeDay())"
+                        class="text-slate-350 hover:text-rose-500 transition focus:outline-none"
+                        title="Xóa địa điểm khỏi ngày này"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+                    </div>
+
+                    <!-- Optional Note Display -->
+                    @if (item.note) {
+                      <p class="text-[10px] text-slate-500 bg-slate-50 rounded-xl p-2 font-medium italic mb-2 border border-slate-150">
+                        "{{ item.note }}"
+                      </p>
+                    }
+
+                    <!-- Collaborator Dragging Overlay Avatar -->
+                    @if (draggingCollaborators()[item.id]) {
+                      <div 
+                        [title]="draggingCollaborators()[item.id].userName + ' đang kéo...'"
+                        class="absolute top-2 right-10 flex items-center gap-1.5 bg-cyan-400 border border-white rounded-full p-0.5 pr-2.5 shadow-md animate-bounce collaborator-drag-avatar select-none"
+                      >
+                        <div class="h-5 w-5 rounded-full overflow-hidden bg-slate-200">
+                          @if (draggingCollaborators()[item.id].userAvatar) {
+                            <img [src]="draggingCollaborators()[item.id].userAvatar" alt="Avatar" class="h-full w-full object-cover">
+                          } @else {
+                            <div class="h-full w-full flex items-center justify-center bg-cyan-200 text-[8px] font-black text-cyan-600">
+                              {{ draggingCollaborators()[item.id].userName.charAt(0) }}
+                            </div>
+                          }
+                        </div>
+                        <span class="text-[8px] font-black text-white uppercase tracking-wider">Đang kéo...</span>
+                      </div>
+                    }
+                    
+                    <div class="cdk-drag-placeholder" *cdkDragPlaceholder></div>
+                  </div>
+                }
+
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>
 
-      <!-- RIGHT PANEL: Route Mapping (3 cols) -->
-      <div class="lg:col-span-3 space-y-6">
-        <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-6 shadow-sm relative overflow-hidden h-[630px] flex flex-col">
-          <div class="mb-4">
-            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Tuyến đường di chuyển</span>
-            <h3 class="text-sm font-black text-slate-800 tracking-tight">Bản đồ Ngày {{ activeDay() }}</h3>
-          </div>
+      <!-- BOTTOM PANEL: Route Mapping (Full Width) -->
+      <div class="w-full mt-6 rounded-[2.5rem] border border-slate-200/80 bg-white p-6 shadow-sm flex flex-col h-[550px]">
+        <div class="mb-4">
+          <span class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Tuyến đường di chuyển</span>
+          <h3 class="text-sm font-black text-slate-800 tracking-tight">Bản đồ lộ trình: Ngày {{ activeDay() }}</h3>
+        </div>
 
-          <!-- Neon Route Map Component -->
-          <div class="flex-grow rounded-3xl overflow-hidden border border-slate-200/60 shadow-inner">
-            <app-trip-route-map 
-              [items]="dayItems()[activeDay()] || []" 
-              [dayNumber]="activeDay()"
-            ></app-trip-route-map>
-          </div>
+        <!-- Neon Route Map Component -->
+        <div class="flex-grow rounded-3xl overflow-hidden border border-slate-200/60 shadow-inner">
+          <app-trip-route-map 
+            [items]="dayItems()[activeDay()] || []" 
+            [dayNumber]="activeDay()"
+          ></app-trip-route-map>
         </div>
       </div>
 

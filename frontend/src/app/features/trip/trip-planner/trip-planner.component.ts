@@ -1,14 +1,14 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { TripService, TripSocketService, Trip, TripItem, TripCollaborator } from '../../../core/services/trip.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Place } from '../../../core/services/search.service';
+import { SearchService, Place } from '../../../core/services/search.service';
 import { TripRouteMapComponent } from '../trip-route-map/trip-route-map.component';
-import { Subscription } from 'rxjs';
+import { Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-trip-planner',
@@ -24,6 +24,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly searchService = inject(SearchService);
+ 
+  searchInput = new FormControl('');
+  searchResults = signal<Place[]>([]);
 
   tripId = '';
   trip = signal<Trip | null>(null);
@@ -59,6 +64,26 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.initSocketConnection();
       }
     });
+
+    this.subs.push(
+      this.searchInput.valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      ).subscribe((q) => {
+        if (!q || q.trim().length < 2) {
+          this.searchResults.set([]);
+          return;
+        }
+        this.searchService.autocomplete(q.trim()).subscribe({
+          next: (res) => {
+            const wishlistIds = new Set(this.wishlist().map(p => p.id));
+            const filtered = res.filter(p => !wishlistIds.has(p.id));
+            this.searchResults.set(filtered);
+          },
+          error: () => this.searchResults.set([])
+        });
+      })
+    );
   }
 
   ngOnDestroy() {
@@ -314,5 +339,35 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  deleteTrip() {
+    if (!this.trip()) return;
+    if (confirm('Bạn có chắc chắn muốn xóa chuyến đi này không? Mọi lịch trình sẽ bị xóa vĩnh viễn.')) {
+      this.tripService.deleteTrip(this.tripId).subscribe({
+        next: () => {
+          this.router.navigate(['/trips']);
+        },
+        error: (err) => {
+          alert(err?.error?.message || 'Có lỗi xảy ra khi xóa chuyến đi.');
+        }
+      });
+    }
+  }
+
+  addPlaceToWishlist(place: Place) {
+    this.wishlistService.addToWishlist(place.id).subscribe({
+      next: (res) => {
+        if (res.success) {
+          // Immediately update signal to render card
+          this.wishlist.update((prev) => [...prev, place]);
+          this.searchInput.setValue('');
+          this.searchResults.set([]);
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Có lỗi xảy ra khi thêm địa điểm.');
+      }
+    });
   }
 }
