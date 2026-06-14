@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../core/services/auth.service';
 import { SocialService, Post } from '../../../core/services/social.service';
 import { SocialSocketService } from '../../../core/services/social-socket.service';
 import { PlaceService } from '../../../core/services/place.service';
 import { TripService, Trip } from '../../../core/services/trip.service';
+import { BookingService, Booking } from '../../../core/services/booking.service';
+import { ChatService, Conversation, Message, Participant } from '../../../core/services/chat.service';
 import { Place } from '../../../core/services/search.service';
 import { BusinessDashboardComponent } from '../business-dashboard/business-dashboard.component';
 import { PostCreatorComponent } from '../../social/post-creator/post-creator.component';
@@ -33,7 +35,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private readonly socialSocket = inject(SocialSocketService);
   private readonly placeService = inject(PlaceService);
   private readonly tripService = inject(TripService);
+  private readonly chatService = inject(ChatService);
+  private readonly bookingService = inject(BookingService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -44,7 +49,23 @@ export class ProfileComponent implements OnInit, OnDestroy {
   avatarFile = signal<File | null>(null);
   coverPreview = signal<string | null>(null);
   coverFile = signal<File | null>(null);
-  activeTab = signal<'stats' | 'edit' | 'business' | 'posts'>('stats');
+  activeTab = signal<'stats' | 'edit' | 'business' | 'posts' | 'bookings' | 'messages' | 'account'>('stats');
+
+  // Bookings signals
+  bookings = signal<Booking[]>([]);
+  isLoadingBookings = signal(false);
+
+  // Inbox signals
+  conversations = signal<Conversation[]>([]);
+  activeConversationId = signal<string | null>(null);
+  messages = signal<Message[]>([]);
+  messageInput = new FormControl('');
+  isLoadingMessages = signal(false);
+
+  // Account Settings signals
+  isSavingAccount = signal(false);
+  accountSuccessMessage = signal('');
+  accountErrorMessage = signal('');
 
   // Posts Feed Tab
   posts = signal<Post[]>([]);
@@ -84,6 +105,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
   form = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(2)]],
     bio: [''],
+  });
+
+  accountForm = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    currentPassword: [''],
+    newPassword: [''],
+    confirmPassword: [''],
   });
 
   constructor() {
@@ -175,10 +203,45 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.socialSocket.connect();
     this.loadPlacesAndTrips();
+
+    // Listen for tab parameters
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const tabParam = params['tab'];
+      if (tabParam) {
+        this.setTab(tabParam as any);
+        const convId = params['conversationId'];
+        if (tabParam === 'messages' && convId) {
+          setTimeout(() => this.selectConversation(convId), 150);
+        }
+      }
+    });
+
+    const user = this.user();
+    if (user) {
+      this.chatService.connect(user.id);
+      this.accountForm.patchValue({ email: user.email });
+    }
+
+    this.authService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((u) => {
+      if (u) {
+        this.chatService.connect(u.id);
+        this.accountForm.patchValue({ email: u.email });
+      }
+    });
+
+    // Handle real-time incoming direct messages
+    this.chatService.newMessage$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((msg) => {
+      if (this.activeConversationId() === msg.conversationId) {
+        this.messages.update((prev) => [...prev, msg]);
+        setTimeout(() => this.scrollToBottom(), 50);
+      }
+      this.refreshConversationsList();
+    });
   }
 
   ngOnDestroy() {
     this.socialSocket.disconnect();
+    this.chatService.disconnect();
   }
 
   loadPlacesAndTrips() {
@@ -263,11 +326,155 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
   }
 
-  setTab(tab: 'stats' | 'edit' | 'business' | 'posts') {
+  setTab(tab: 'stats' | 'edit' | 'business' | 'posts' | 'bookings' | 'messages' | 'account') {
     this.activeTab.set(tab);
     if (tab === 'posts') {
       this.loadMyPosts();
+    } else if (tab === 'bookings') {
+      this.loadBookings();
+    } else if (tab === 'messages') {
+      this.loadConversations();
     }
+  }
+
+  // Bookings Tab actions
+  loadBookings() {
+    this.isLoadingBookings.set(true);
+    this.bookingService.getMyBookings().subscribe({
+      next: (res) => {
+        this.bookings.set(res);
+        this.isLoadingBookings.set(false);
+      },
+      error: () => this.isLoadingBookings.set(false),
+    });
+  }
+
+  cancelUserBooking(bookingId: string) {
+    if (confirm('Bạn có chắc chắn muốn hủy đặt chỗ này không?')) {
+      this.bookingService.cancelBooking(bookingId).subscribe({
+        next: (updatedBooking) => {
+          this.bookings.update((prev) =>
+            prev.map((b) => (b.id === bookingId ? { ...b, ...updatedBooking } : b))
+          );
+        },
+        error: (err) => {
+          alert(err?.error?.message || 'Không thể hủy đặt chỗ. Vui lòng thử lại sau.');
+        },
+      });
+    }
+  }
+
+  // Inbox Tab actions
+  loadConversations() {
+    this.chatService.getConversations().subscribe({
+      next: (res) => {
+        this.conversations.set(res);
+        // If not already set, auto select first conversation
+        if (res.length > 0 && !this.activeConversationId()) {
+          this.selectConversation(res[0].id);
+        }
+      },
+    });
+  }
+
+  selectConversation(id: string) {
+    this.activeConversationId.set(id);
+    this.isLoadingMessages.set(true);
+    this.chatService.getMessages(id).subscribe({
+      next: (res) => {
+        this.messages.set(res);
+        this.isLoadingMessages.set(false);
+        setTimeout(() => this.scrollToBottom(), 50);
+      },
+      error: () => this.isLoadingMessages.set(false),
+    });
+  }
+
+  sendChatMessage() {
+    const content = this.messageInput.value?.trim();
+    const convId = this.activeConversationId();
+    if (!content || !convId) return;
+
+    this.chatService.sendMessage(convId, content).subscribe({
+      next: (msg) => {
+        this.messages.update((prev) => [...prev, msg]);
+        this.messageInput.reset();
+        this.refreshConversationsList();
+        setTimeout(() => this.scrollToBottom(), 50);
+      },
+      error: () => {
+        alert('Không thể gửi tin nhắn. Vui lòng thử lại.');
+      },
+    });
+  }
+
+  refreshConversationsList() {
+    this.chatService.getConversations().subscribe({
+      next: (res) => this.conversations.set(res),
+    });
+  }
+
+  getChatPartner(conv: Conversation): Participant | null {
+    const me = this.user();
+    if (!me) return null;
+    const partner = conv.participants.find((p) => p.userId !== me.id);
+    return partner ? partner.user : null;
+  }
+
+  get activeChatPartner(): Participant | null {
+    const activeId = this.activeConversationId();
+    if (!activeId) return null;
+    const conv = this.conversations().find((c) => c.id === activeId);
+    return conv ? this.getChatPartner(conv) : null;
+  }
+
+  scrollToBottom() {
+    if (typeof document !== 'undefined') {
+      const container = document.getElementById('chat-messages-container');
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+  }
+
+  // Account settings tab actions
+  saveAccountSettings() {
+    if (this.accountForm.invalid) {
+      this.accountForm.markAllAsTouched();
+      return;
+    }
+
+    const val = this.accountForm.value;
+    if (val.newPassword && val.newPassword !== val.confirmPassword) {
+      this.accountErrorMessage.set('Mật khẩu mới và xác nhận mật khẩu không trùng khớp.');
+      return;
+    }
+
+    this.isSavingAccount.set(true);
+    this.accountSuccessMessage.set('');
+    this.accountErrorMessage.set('');
+
+    const dto = {
+      email: val.email!,
+      currentPassword: val.currentPassword || undefined,
+      newPassword: val.newPassword || undefined,
+    };
+
+    this.authService.updateAccount(dto).subscribe({
+      next: () => {
+        this.isSavingAccount.set(false);
+        this.accountSuccessMessage.set('Cập nhật tài khoản thành công!');
+        this.accountForm.patchValue({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+      },
+      error: (err) => {
+        this.isSavingAccount.set(false);
+        this.accountErrorMessage.set(err?.error?.message || 'Cập nhật thông tin thất bại. Vui lòng thử lại.');
+      },
+    });
   }
 
   loadMyPosts() {

@@ -48,8 +48,8 @@ export class SocialService {
     return this.prisma.post.findUnique({
       where: { id: post.id },
       include: {
-        user: { select: { id: true, fullName: true, avatarUrl: true } },
-        place: { select: { id: true, name: true, address: true } },
+        user: { select: { id: true, fullName: true, avatarUrl: true, email: true } },
+        place: { select: { id: true, name: true, address: true, category: true, images: true, ratingAverage: true } },
         trip: { select: { id: true, title: true, startDate: true, endDate: true } },
         images: true,
         likes: true,
@@ -76,8 +76,8 @@ export class SocialService {
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
-        user: { select: { id: true, fullName: true, avatarUrl: true } },
-        place: { select: { id: true, name: true, address: true } },
+        user: { select: { id: true, fullName: true, avatarUrl: true, email: true } },
+        place: { select: { id: true, name: true, address: true, category: true, images: true, ratingAverage: true } },
         trip: {
           select: {
             id: true,
@@ -224,8 +224,8 @@ export class SocialService {
         tripId: tripId || null,
       },
       include: {
-        user: { select: { id: true, fullName: true, avatarUrl: true } },
-        place: { select: { id: true, name: true, address: true } },
+        user: { select: { id: true, fullName: true, avatarUrl: true, email: true } },
+        place: { select: { id: true, name: true, address: true, category: true, images: true, ratingAverage: true } },
         trip: { select: { id: true, title: true, startDate: true, endDate: true } },
         images: true,
         likes: true,

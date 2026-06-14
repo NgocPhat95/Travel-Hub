@@ -157,6 +157,28 @@ export class AuthService {
     };
   }
 
+  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string }> {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required.');
+    }
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.refreshTokenSecret,
+      });
+      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+      if (!user || user.status !== 'ACTIVE') {
+        throw new UnauthorizedException('User inactive or not found.');
+      }
+      const accessToken = await this.jwtService.signAsync(
+        { sub: user.id, email: user.email, role: user.role },
+        { secret: this.accessTokenSecret, expiresIn: '7d' },
+      );
+      return { accessToken };
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token.');
+    }
+  }
+
   async forgotPassword(email: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -281,7 +303,7 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.accessTokenSecret,
-      expiresIn: '15m',
+      expiresIn: '7d',
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {

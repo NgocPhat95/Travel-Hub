@@ -310,6 +310,60 @@
 
         <!-- Right Side: Suggest Edit Form (35% width) -->
         <div class="space-y-8">
+          <!-- TripAdvisor style Reservation Widget Card -->
+          <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-8 shadow-sm flex flex-col space-y-4">
+            <div class="space-y-1">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Đại lý ủy quyền</span>
+              <h3 class="text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+                📅 Đặt chỗ trực tiếp
+              </h3>
+            </div>
+            <p class="text-xs text-slate-500 font-semibold leading-relaxed">
+              Đặt bàn ăn, phòng khách sạn hoặc vé tham quan trực tiếp qua Travel Hub để nhận được nhiều ưu đãi hấp dẫn.
+            </p>
+            <button 
+              (click)="openBookingModal()"
+              class="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white font-bold text-xs py-3.5 shadow-md hover:scale-[1.01] active:scale-[0.99] transition duration-200 select-none"
+            >
+              Đặt ngay bây giờ
+            </button>
+
+            <!-- Redirection affiliate buttons -->
+            <button 
+              (click)="redirectToPartner('TRIPADVISOR')"
+              class="w-full rounded-2xl bg-[#00aa6c] hover:bg-[#008a54] text-white font-bold text-xs py-3.5 shadow-md hover:scale-[1.01] active:scale-[0.99] transition duration-200 select-none flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              Xem trên TripAdvisor
+            </button>
+
+            <button 
+              (click)="redirectToPartner('BOOKING_COM')"
+              class="w-full rounded-2xl bg-[#003580] hover:bg-[#00224f] text-white font-bold text-xs py-3.5 shadow-md hover:scale-[1.01] active:scale-[0.99] transition duration-200 select-none flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H6v-2h4v2zm3-4H6v-2h7v2zm3-4H6V7h10v2z"/>
+              </svg>
+              Đặt phòng trên Booking.com
+            </button>
+
+            <!-- Message Owner option if verified owner exists -->
+            @if (place()?.ownerId) {
+              <button 
+                type="button"
+                (click)="startChatWithOwner()"
+                class="w-full rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs py-3 transition select-none flex items-center justify-center gap-1.5"
+              >
+                <svg class="w-4 h-4 text-slate-450" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                Liên hệ chủ địa điểm
+              </button>
+            }
+          </div>
+
           <app-price-comparison [placeId]="place()!.id"></app-price-comparison>
 
           <div class="rounded-[2.5rem] border border-slate-200/80 bg-white p-8 shadow-sm">
@@ -388,3 +442,143 @@
     </div>
   }
 </div>
+
+<!-- TripAdvisor Style Reservation Modal -->
+@if (showBookingModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 font-sans select-none animate-fade-in">
+    <div class="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 flex flex-col space-y-4 animate-scale-up">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="text-sm font-black text-slate-800 tracking-tight">Đặt chỗ tại {{ place()?.name }}</h3>
+        <button 
+          (click)="closeBookingModal()"
+          class="rounded-full p-1.5 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="bookingForm" (ngSubmit)="submitBooking()" class="space-y-4">
+        <!-- Date Selection -->
+        <div class="space-y-1">
+          <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Ngày Check-in *</label>
+          <input 
+            type="date" 
+            formControlName="checkInDate"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white transition"
+          />
+          <p *ngIf="bookingForm.get('checkInDate')?.touched && bookingForm.get('checkInDate')?.errors?.['required']" class="text-[9px] text-rose-500 font-bold">Vui lòng chọn ngày.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Time Selection -->
+          <div class="space-y-1">
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Giờ đến *</label>
+            <input 
+              type="time" 
+              formControlName="checkInTime"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white transition"
+            />
+          </div>
+
+          <!-- Guest Count Selection -->
+          <div class="space-y-1">
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Số lượng khách *</label>
+            <input 
+              type="number" 
+              formControlName="guestsCount"
+              min="1"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white transition"
+            />
+          </div>
+        </div>
+
+        <!-- Check-out Selection (Only for HOTEL) -->
+        @if (place()?.category === 'HOTEL') {
+          <div class="space-y-1">
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Ngày Check-out</label>
+            <input 
+              type="date" 
+              formControlName="checkOutDate"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white transition"
+            />
+          </div>
+        }
+
+        <!-- Special Requests -->
+        <div class="space-y-1">
+          <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Yêu cầu đặc biệt</label>
+          <textarea 
+            formControlName="specialRequests"
+            rows="2"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 font-semibold outline-none focus:border-cyan-400 focus:bg-white resize-none transition"
+            placeholder="Ví dụ: Bàn gần cửa sổ, phòng không hút thuốc..."
+          ></textarea>
+        </div>
+
+        <!-- Message feedback -->
+        @if (bookingSuccessMessage()) {
+          <p class="text-xs text-emerald-600 font-bold">{{ bookingSuccessMessage() }}</p>
+        }
+        @if (bookingErrorMessage()) {
+          <p class="text-xs text-rose-600 font-bold">{{ bookingErrorMessage() }}</p>
+        }
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+          <button 
+            type="button" 
+            (click)="closeBookingModal()"
+            class="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-5 py-2.5 font-bold text-xs transition active:scale-95"
+          >
+            Hủy bỏ
+          </button>
+          <button 
+            type="submit" 
+            [disabled]="isSubmittingBooking() || bookingForm.invalid"
+            class="rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 font-bold text-xs transition active:scale-95 shadow disabled:opacity-50"
+          >
+            {{ isSubmittingBooking() ? 'Đang thực hiện...' : 'Đặt ngay' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Secure Redirect Modal -->
+@if (showRedirectModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div class="bg-white border border-slate-100 rounded-3xl max-w-sm w-full p-8 text-center shadow-2xl">
+      <div class="wave-container mb-6 flex justify-center items-center mx-auto">
+        <div class="pulse-wave-ring ring-1"></div>
+        <div class="pulse-wave-ring ring-2"></div>
+        <div class="pulse-wave-ring ring-3"></div>
+        <div 
+          [class.bg-[#00aa6c]]="redirectingPartner() === 'TripAdvisor'"
+          [class.bg-[#003580]]="redirectingPartner() === 'Booking.com'"
+          class="icon-secure text-white rounded-full p-4 shadow-lg relative z-10"
+        >
+          @if (redirectingPartner() === 'TripAdvisor') {
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+          } @else {
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H6v-2h4v2zm3-4H6v-2h7v2zm3-4H6V7h10v2z"/>
+            </svg>
+          }
+        </div>
+      </div>
+      <h4 class="text-xl font-black text-slate-900 mb-2">Đang mở {{ redirectingPartner() }}</h4>
+      <p class="text-sm text-slate-500 mb-4">Chuyển đến trang đối tác liên kết cho <strong class="font-bold" [class.text-[#00aa6c]]="redirectingPartner() === 'TripAdvisor'" [class.text-[#003580]]="redirectingPartner() === 'Booking.com'">{{ redirectingToPlace() }}</strong></p>
+      <div class="inline-flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-500 border border-slate-200/60">
+        <span class="dot-loading"></span>
+        Đang mã hóa kết nối bảo mật...
+      </div>
+    </div>
+  </div>
+}

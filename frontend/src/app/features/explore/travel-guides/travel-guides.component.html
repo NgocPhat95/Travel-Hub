@@ -1,0 +1,143 @@
+<div class="travel-guides-page min-h-screen font-sans">
+
+  <!-- ========== HERO ========== -->
+  <div class="guides-hero relative overflow-hidden">
+    <div class="hero-gradient-overlay absolute inset-0"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-6 py-22">
+      <div class="flex flex-col items-start max-w-2xl">
+        <span class="guides-label">Travel Hub Editorial</span>
+        <h1 class="guides-hero-title">Cẩm Nang<br><span style="color:#00aa6c">Du Lịch</span></h1>
+        <p class="guides-hero-sub">
+          Hướng dẫn du lịch sâu sắc, mẹo thực tế và những câu chuyện truyền cảm hứng —
+          được tuyển chọn kỹ lưỡng bởi đội ngũ Travel Hub và cộng đồng du khách.
+        </p>
+        <div class="guides-hero-meta">
+          <span>📰 {{ guides.length }} bài viết</span>
+          <span>·</span>
+          <span>🔄 Cập nhật hàng tuần</span>
+          <span>·</span>
+          <span>✍️ Biên tập thực tế</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FEATURED GUIDE ========== -->
+  @if (featuredGuide() && activeFilter() === 'ALL') {
+    <div class="max-w-7xl mx-auto px-6 -mt-10 relative z-20 mb-12">
+      <a [routerLink]="['/travel-guides', featuredGuide()!.slug]" class="featured-card group block">
+        <div class="featured-img-wrapper">
+          <img [src]="featuredGuide()!.coverImage" [alt]="featuredGuide()!.title" class="featured-img">
+          <div class="featured-overlay"></div>
+          <div class="featured-content">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="featured-badge">✦ Bài nổi bật</span>
+              <span class="category-chip" [class]="getCategoryColor(featuredGuide()!.category)">
+                {{ getCategoryIcon(featuredGuide()!.category) }} {{ getCategoryLabel(featuredGuide()!.category) }}
+              </span>
+            </div>
+            <h2 class="featured-title">{{ featuredGuide()!.title }}</h2>
+            <p class="featured-excerpt">{{ featuredGuide()!.excerpt }}</p>
+            <div class="featured-meta">
+              <img [src]="featuredGuide()!.author.avatar" class="w-7 h-7 rounded-full border-2 border-white/30" alt="">
+              <span style="color:rgba(255,255,255,0.7);font-weight:700">{{ featuredGuide()!.author.name }}</span>
+              <span style="color:rgba(255,255,255,0.3)">·</span>
+              <span>📖 {{ featuredGuide()!.readTime }} phút đọc</span>
+              <span style="color:rgba(255,255,255,0.3)">·</span>
+              <span>{{ featuredGuide()!.date }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  }
+
+  <!-- ========== FILTER TABS — Unified glass style ========== -->
+  <div class="guides-filter-bar sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/80 py-3">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex items-center gap-1 py-1 px-1 rounded-2xl bg-slate-200/50 border border-slate-300/40 w-fit overflow-x-auto" style="scrollbar-width:none">
+        @for (f of filters; track f.key) {
+          <button
+            (click)="setFilter(f.key)"
+            class="guide-filter-btn flex-shrink-0 py-2 px-5 rounded-xl font-bold text-xs md:text-sm transition-all duration-300 border-none cursor-pointer focus:outline-none flex items-center gap-2"
+            [class.active-filter]="activeFilter() === f.key"
+            [class.bg-white]="activeFilter() === f.key"
+            [class.text-slate-950]="activeFilter() === f.key"
+            [class.shadow-sm]="activeFilter() === f.key"
+            [class.bg-transparent]="activeFilter() !== f.key"
+            [class.text-slate-500]="activeFilter() !== f.key"
+          >
+            <span>{{ f.icon }}</span>
+            <span>{{ f.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== GUIDES GRID ========== -->
+  <div class="max-w-7xl mx-auto px-6 py-12 pb-20">
+
+    <!-- Section header -->
+    @if (nonFeaturedGuides().length > 0) {
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900">
+            @if (activeFilter() === 'ALL') { Tất cả bài viết }
+            @else if (activeFilter() === 'FOOD') { Ẩm thực & Nhà hàng }
+            @else if (activeFilter() === 'HOTEL') { Khách sạn & Lưu trú }
+            @else if (activeFilter() === 'ATTRACTION') { Điểm tham quan }
+            @else { Mẹo du lịch }
+          </h2>
+          <p class="text-sm mt-1 text-slate-500">{{ nonFeaturedGuides().length }} bài viết</p>
+        </div>
+      </div>
+    }
+
+    @if (nonFeaturedGuides().length === 0) {
+      <div class="text-center py-24">
+        <div class="text-6xl mb-5">📭</div>
+        <h3 class="text-xl font-bold mb-2 text-slate-800">Chưa có bài viết nào</h3>
+        <p class="text-slate-500">Thử chọn danh mục khác</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (guide of nonFeaturedGuides(); track guide.slug) {
+          <a [routerLink]="['/travel-guides', guide.slug]" class="guide-card group block">
+            <!-- Image -->
+            <div class="guide-img-wrapper">
+              <img [src]="guide.coverImage" [alt]="guide.title" class="guide-img">
+              <div class="guide-img-overlay"></div>
+              <span class="guide-category-chip" [class]="getCategoryColor(guide.category)">
+                {{ getCategoryIcon(guide.category) }} {{ getCategoryLabel(guide.category) }}
+              </span>
+            </div>
+            <!-- Body -->
+            <div class="guide-body">
+              <!-- Tags -->
+              <div class="guide-tags">
+                @for (tag of guide.tags.slice(0, 2); track tag) {
+                  <span class="guide-tag"># {{ tag }}</span>
+                }
+              </div>
+              <h3 class="guide-title">{{ guide.title }}</h3>
+              <p class="guide-excerpt">{{ guide.excerpt }}</p>
+              <div class="guide-footer">
+                <div class="guide-author">
+                  <img [src]="guide.author.avatar" class="w-6 h-6 rounded-full border border-white/10" alt="">
+                  <span>{{ guide.author.name }}</span>
+                </div>
+                <div class="guide-read-meta">
+                  <span>📖 {{ guide.readTime }} phút</span>
+                  <span>·</span>
+                  <span>{{ guide.date }}</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</div>

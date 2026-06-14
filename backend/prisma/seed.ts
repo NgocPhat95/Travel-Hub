@@ -1,4 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import * as fs from 'fs';
+import * as path from 'path';
+import 'dotenv/config';
 
 const prisma = new PrismaClient();
 
@@ -21,7 +24,7 @@ async function main() {
   await prisma.editSuggestion.deleteMany({});
   await prisma.place.deleteMany({});
 
-  console.log('Khởi tạo mock user nếu chưa có...');
+  console.log('Khởi tạo người dùng thử nghiệm nếu chưa có...');
   let user = await prisma.user.findUnique({ where: { email: 'test_user@travelhub.com' } });
   if (!user) {
     user = await prisma.user.create({
@@ -38,7 +41,7 @@ async function main() {
     });
   }
 
-  console.log('Khởi tạo mock admin nếu chưa có...');
+  console.log('Khởi tạo quản trị viên nếu chưa có...');
   let admin = await prisma.user.findUnique({ where: { email: 'admin@travelhub.com' } });
   if (!admin) {
     admin = await prisma.user.create({
@@ -55,260 +58,152 @@ async function main() {
     });
   }
 
-  console.log('Gieo dữ liệu địa điểm du lịch mẫu (Seed)...');
+  console.log('Khởi tạo tài khoản đối tác Booking.com...');
+  let partnerUser = await prisma.user.findFirst({
+    where: { email: 'booking-partner@travelhub.com' },
+  });
 
-  const placesData = [
-    {
-      name: 'Hồ Hoàn Kiếm (Hồ Gươm)',
-      description: 'Trái tim của thủ đô Hà Nội, địa danh văn hóa lịch sử nổi tiếng với Tháp Rùa và Đền Ngọc Sơn.',
-      category: 'ATTRACTION',
-      address: 'Hồ Hoàn Kiếm, Hàng Trống, Hoàn Kiếm, Hà Nội',
-      latitude: 21.0285,
-      longitude: 105.8521,
-      priceMin: 0,
-      priceMax: 0,
-      priceRange: 'Miễn phí',
-      avgRating: 4.8,
-      ratingAverage: 4.8,
-      isVerified: true,
-      amenities: ['parking', 'walking_street', 'photography'],
-      images: [
-        'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1509060464153-44667396260f?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80'
-      ],
-      status: 'ACTIVE',
-      avatarUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      name: 'Sofitel Legend Metropole Hà Nội',
-      description: 'Khách sạn 5 sao cổ điển sang trọng bậc nhất Hà Nội với lối kiến trúc Pháp lãng mạn.',
-      category: 'HOTEL',
-      address: '15 Ngô Quyền, Tràng Tiền, Hoàn Kiếm, Hà Nội',
-      latitude: 21.0253,
-      longitude: 105.8553,
-      priceMin: 4000000,
-      priceMax: 15000000,
-      priceRange: '4.000.000 đ - 15.000.000 đ',
-      avgRating: 4.7,
-      ratingAverage: 4.7,
-      isVerified: true,
-      amenities: ['wifi', 'parking', 'pool', 'restaurant', 'gym', 'spa'],
-      images: [
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80'
-      ],
-      status: 'ACTIVE',
-      avatarUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      name: 'Nhà Hàng Quán Ăn Ngon - Phan Bội Châu',
-      description: 'Nơi hội tụ tinh hoa ẩm thực đường phố ba miền Việt Nam trong không gian biệt thự cổ kính.',
-      category: 'RESTAURANT',
-      address: '18 Phan Bội Châu, Cửa Nam, Hoàn Kiếm, Hà Nội',
-      latitude: 21.0278,
-      longitude: 105.8458,
-      priceMin: 100000,
-      priceMax: 500000,
-      priceRange: '100.000 đ - 500.000 đ',
-      avgRating: 4.2,
-      ratingAverage: 4.2,
-      isVerified: false,
-      amenities: ['wifi', 'parking', 'air_conditioning', 'restaurant'],
-      images: [
-        'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80'
-      ],
-      status: 'ACTIVE',
-      avatarUrl: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      name: 'Nhà thờ Đức Bà Sài Gòn',
-      description: 'Kiệt tác kiến trúc Gothic cổ kính, biểu tượng lịch sử văn hóa lâu đời của Thành phố Hồ Chí Minh.',
-      category: 'ATTRACTION',
-      address: '01 Công xã Paris, Bến Nghé, Quận 1, Thành phố Hồ Chí Minh',
-      latitude: 10.7798,
-      longitude: 106.6990,
-      priceMin: 0,
-      priceMax: 0,
-      priceRange: 'Miễn phí',
-      avgRating: 4.6,
-      ratingAverage: 4.6,
-      isVerified: true,
-      amenities: ['parking', 'photography'],
-      images: [
-        'https://images.unsplash.com/photo-1596422846543-75c6fc18a52b?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80'
-      ],
-      status: 'ACTIVE',
-      avatarUrl: 'https://images.unsplash.com/photo-1596422846543-75c6fc18a52b?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      name: 'The Reverie Saigon Hotel',
-      description: 'Khách sạn 6 sao siêu sang trọng tọa lạc tại trung tâm đại lộ Nguyễn Huệ sôi động.',
-      category: 'HOTEL',
-      address: '22-36 Nguyễn Huệ, Bến Nghé, Quận 1, Thành phố Hồ Chí Minh',
-      latitude: 10.7753,
-      longitude: 106.7021,
-      priceMin: 5000000,
-      priceMax: 20000000,
-      priceRange: '5.000.000 đ - 20.000.000 đ',
-      avgRating: 4.9,
-      ratingAverage: 4.9,
-      isVerified: true,
-      amenities: ['wifi', 'parking', 'pool', 'spa', 'restaurant', 'gym'],
-      images: [
-        'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80'
-      ],
-      status: 'ACTIVE',
-      avatarUrl: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      name: 'Nhà Hàng Ngon - Pasteur',
-      description: 'Địa điểm ẩm thực nổi tiếng phục vụ đa dạng các món ăn Việt Nam truyền thống trong không gian mở sân vườn.',
-      category: 'RESTAURANT',
-      address: '160 Pasteur, Bến Nghé, Quận 1, Thành phố Hồ Chí Minh',
-      latitude: 10.7781,
-      longitude: 106.6972,
-      priceMin: 150000,
-      priceMax: 800000,
-      priceRange: '150.000 đ - 800.000 đ',
-      avgRating: 4.4,
-      ratingAverage: 4.4,
-      isVerified: false,
-      amenities: ['wifi', 'parking', 'air_conditioning', 'restaurant'],
-      images: [
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=800&q=80'
-      ],
-      status: 'ACTIVE',
-      avatarUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
-    },
-  ];
-
-  for (const item of placesData) {
-    const createdPlace = await prisma.place.create({
-      data: item,
+  if (!partnerUser) {
+    partnerUser = await prisma.user.create({
+      data: {
+        email: 'booking-partner@travelhub.com',
+        fullName: 'Booking.com Partner',
+        avatarUrl: 'https://logos-world.net/wp-content/uploads/2021/02/Booking-Logo-700x394.png',
+        role: 'BUSINESS_OWNER',
+        status: 'ACTIVE',
+      },
     });
-    console.log(`Đã tạo địa điểm: ${createdPlace.name}`);
+  }
 
-    // Gieo Q&A mẫu cho địa điểm
-    if (createdPlace.category === 'ATTRACTION' && createdPlace.name.includes('Hồ Hoàn Kiếm')) {
-      const q = await prisma.question.create({
-        data: {
-          placeId: createdPlace.id,
-          userId: user.id,
-          content: 'Gửi xe máy ở đâu tiện nhất khi đi dạo phố đi bộ Hồ Gươm cuối tuần vậy mọi người?',
-        },
-      });
+  // Load feed dynamically from URL or local file
+  let deals: any[] = [];
+  const feedUrl = process.env.BOOKING_COM_FEED_URL;
 
-      await prisma.answer.create({
-        data: {
-          questionId: q.id,
-          userId: user.id,
-          content: 'Bạn có thể gửi ở khu vực gầm cầu Chương Dương hoặc bãi xe Tràng Tiền Plaza nhé, đi bộ ra rất gần.',
-        },
-      });
+  if (feedUrl) {
+    try {
+      console.log(`[Seed] Đang tải feed từ URL: ${feedUrl}`);
+      const response = await fetch(feedUrl);
+      if (response.ok) {
+        deals = await response.json() as any[];
+        console.log(`[Seed] Tải thành công ${deals.length} deals từ feed.`);
+      } else {
+        console.warn(`[Seed] Không thể tải từ URL. Status: ${response.status}`);
+      }
+    } catch (e: any) {
+      console.warn(`[Seed] Lỗi tải từ URL: ${e.message}`);
+    }
+  }
 
-      await prisma.answer.create({
+  if (deals.length === 0) {
+    try {
+      const localPath = path.join(process.cwd(), 'booking_partner_feed.json');
+      console.log(`[Seed] Đang tải feed từ file cục bộ: ${localPath}`);
+      if (fs.existsSync(localPath)) {
+        const fileContent = fs.readFileSync(localPath, 'utf-8');
+        deals = JSON.parse(fileContent);
+        console.log(`[Seed] Tải thành công ${deals.length} deals từ file cục bộ.`);
+      } else {
+        console.warn(`[Seed] Không tìm thấy file cục bộ tại ${localPath}`);
+      }
+    } catch (e: any) {
+      console.error(`[Seed] Lỗi đọc file cục bộ:`, e.message);
+    }
+  }
+
+  if (deals.length === 0) {
+    console.warn('[Seed] Không nạp được dữ liệu Booking.com. Tiến trình kết thúc.');
+    return;
+  }
+
+  console.log('Đang đồng bộ dữ liệu Booking.com vào cơ sở dữ liệu...');
+  let count = 0;
+  for (const deal of deals) {
+    // 1. Tạo địa điểm du lịch
+    const place = await prisma.place.create({
+      data: {
+        name: deal.name,
+        description: deal.description,
+        category: deal.category,
+        address: deal.address,
+        latitude: deal.latitude,
+        longitude: deal.longitude,
+        priceMin: deal.priceMin,
+        priceMax: deal.priceMax,
+        priceRange: deal.priceRange,
+        avgRating: deal.avgRating,
+        ratingAverage: deal.avgRating,
+        amenities: deal.amenities,
+        images: deal.images,
+        isVerified: true,
+        status: 'ACTIVE',
+      },
+    });
+
+    // 2. Tạo giá phòng đối tác Booking.com
+    await prisma.partnerPrice.create({
+      data: {
+        placeId: place.id,
+        partnerName: 'BOOKING_COM',
+        price: deal.partnerPrice,
+        currency: 'VND',
+        deepLink: deal.partnerLink,
+      },
+    });
+
+    // 3. Tạo bài viết quảng bá (Post) của Booking.com Partner
+    const post = await prisma.post.create({
+      data: {
+        userId: partnerUser.id,
+        content: deal.postContent,
+        placeId: place.id,
+      },
+    });
+
+    // 4. Thêm ảnh bài viết
+    if (deal.images && deal.images.length > 0) {
+      await prisma.postImage.create({
         data: {
-          questionId: q.id,
-          userId: user.id,
-          content: 'Mình hay gửi xe ở phố Bảo Khánh, giá vé 10k gửi rất yên tâm.',
+          postId: post.id,
+          url: deal.images[0],
         },
       });
     }
 
-    if (createdPlace.category === 'HOTEL' && createdPlace.name.includes('Metropole')) {
+    // 5. Gieo một vài Q&A và review mẫu cho địa điểm Booking này để giao diện sinh động
+    if (deal.category === 'HOTEL') {
       const q = await prisma.question.create({
         data: {
-          placeId: createdPlace.id,
+          placeId: place.id,
           userId: user.id,
-          content: 'Khách sạn có dịch vụ đưa đón sân bay bằng xe riêng không?',
+          content: 'Khách sạn này có cho phép mang theo thú cưng không và có tính thêm phí không?',
         },
       });
 
       await prisma.answer.create({
         data: {
           questionId: q.id,
-          userId: user.id,
-          content: 'Có dịch vụ đưa đón sân bay bằng xe hạng sang (Mercedes/BMW), phí tầm 1.200.000đ/lượt. Bạn nên đặt trước khi check-in.',
+          userId: admin.id,
+          content: 'Chào bạn, theo thông tin từ Booking.com, khách sạn có tiếp nhận thú cưng theo yêu cầu, có thể có tính phí phụ thu nhé.',
         },
       });
-    }
 
-    // Gieo giá đối tác liên kết mẫu (PartnerPrice)
-    const basePrice = createdPlace.priceMin || 50000;
-    await prisma.partnerPrice.createMany({
-      data: [
-        {
-          placeId: createdPlace.id,
-          partnerName: 'AGODA',
-          price: Math.round(basePrice * 1.05),
-          currency: 'VND',
-          deepLink: `https://www.agoda.com/partners/partnerlink.html?placeId=${createdPlace.id}`,
-        },
-        {
-          placeId: createdPlace.id,
-          partnerName: 'BOOKING_COM',
-          price: basePrice, // Best deal
-          currency: 'VND',
-          deepLink: `https://www.booking.com/affiliate/redirect.html?placeId=${createdPlace.id}`,
-        },
-        {
-          placeId: createdPlace.id,
-          partnerName: 'EXPEDIA',
-          price: Math.round(basePrice * 1.1),
-          currency: 'VND',
-          deepLink: `https://www.expedia.com/affiliate/redirect.html?placeId=${createdPlace.id}`,
-        },
-      ]
-    });
-
-    // Gieo một số review và báo cáo review để kiểm duyệt
-    if (createdPlace.name.includes('Metropole')) {
-      const review1 = await prisma.review.create({
+      await prisma.review.create({
         data: {
-          placeId: createdPlace.id,
+          placeId: place.id,
           userId: user.id,
           ratingOverall: 5,
           ratingCleanliness: 5,
           ratingService: 5,
-          title: 'Trải nghiệm tuyệt vời tại Metropole',
-          content: 'Không gian sang trọng, dịch vụ chuyên nghiệp, đồ ăn rất ngon. Rất đáng tiền!',
-        },
-      });
-
-      const review2 = await prisma.review.create({
-        data: {
-          placeId: createdPlace.id,
-          userId: user.id,
-          ratingOverall: 2,
-          ratingCleanliness: 2,
-          ratingService: 1,
-          title: 'Review spam - Quảng cáo bán hàng trái phép',
-          content: 'Vào đây mua sắm và truy cập trang web cá nhân tại: https://spam-link.com để nhận voucher giảm giá cực lớn 90% ngay hôm nay!!!',
-        },
-      });
-
-      // Tạo báo cáo cho review2
-      await prisma.reviewReport.create({
-        data: {
-          reviewId: review2.id,
-          reporterId: user.id,
-          reason: 'Spam quảng cáo và chứa liên kết độc hại, vi phạm tiêu chuẩn cộng đồng.',
+          title: 'Dịch vụ xuất sắc, phòng ốc rất sạch đẹp!',
+          content: 'Gia đình tôi đã có một kỳ nghỉ vô cùng thoải mái tại đây. Đặt phòng qua Booking.com thanh toán nhanh chóng và nhận phòng rất dễ dàng.',
         },
       });
     }
+
+    count++;
   }
 
-  console.log('Gieo dữ liệu thành công!');
+  console.log(`Đồng bộ thành công ${count} địa điểm & deals từ Booking.com.`);
 }
 
 main()

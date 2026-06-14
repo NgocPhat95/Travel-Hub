@@ -1,10 +1,12 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Title, Meta } from '@angular/platform-browser';
 import { PlaceService, Question } from '../../../core/services/place.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { BookingService } from '../../../core/services/booking.service';
+import { ChatService } from '../../../core/services/chat.service';
 import { Place } from '../../../core/services/search.service';
 import { ReviewListComponent } from '../../review/review-list/review-list.component';
 import { WishlistToggleComponent } from '../wishlist-toggle/wishlist-toggle.component';
@@ -27,6 +29,9 @@ import { PriceComparisonComponent } from '../price-comparison/price-comparison.c
 export class PlaceDetailComponent implements OnInit, OnDestroy {
   private readonly placeService = inject(PlaceService);
   private readonly authService = inject(AuthService);
+  private readonly bookingService = inject(BookingService);
+  private readonly chatService = inject(ChatService);
+  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
@@ -35,6 +40,25 @@ export class PlaceDetailComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
 
   place = signal<Place | null>(null);
+  
+  // Redirect signals
+  showRedirectModal = signal(false);
+  redirectingPartner = signal('');
+  redirectingToPlace = signal('');
+
+  // Booking signals & forms
+  showBookingModal = signal(false);
+  isSubmittingBooking = signal(false);
+  bookingSuccessMessage = signal('');
+  bookingErrorMessage = signal('');
+
+  bookingForm = this.fb.group({
+    checkInDate: ['', Validators.required],
+    checkInTime: ['12:00', Validators.required],
+    checkOutDate: [''],
+    guestsCount: [2, [Validators.required, Validators.min(1)]],
+    specialRequests: [''],
+  });
   questions = signal<Question[]>([]);
   isLoading = signal(true);
   isLoadingQA = signal(false);
@@ -220,6 +244,102 @@ export class PlaceDetailComponent implements OnInit, OnDestroy {
         this.editErrorMessage.set('Không thể gửi đề xuất chỉnh sửa. Vui lòng thử lại sau.');
       },
     });
+  }
+
+  openBookingModal() {
+    if (!this.isAuthenticated()) {
+      alert('Vui lòng đăng nhập để thực hiện đặt chỗ!');
+      return;
+    }
+    this.bookingForm.reset({
+      checkInDate: '',
+      checkInTime: '12:00',
+      checkOutDate: '',
+      guestsCount: 2,
+      specialRequests: '',
+    });
+    this.bookingSuccessMessage.set('');
+    this.bookingErrorMessage.set('');
+    this.showBookingModal.set(true);
+  }
+
+  closeBookingModal() {
+    this.showBookingModal.set(false);
+  }
+
+  submitBooking() {
+    if (this.bookingForm.invalid || !this.place()) {
+      this.bookingForm.markAllAsTouched();
+      return;
+    }
+    this.isSubmittingBooking.set(true);
+    this.bookingSuccessMessage.set('');
+    this.bookingErrorMessage.set('');
+
+    const val = this.bookingForm.value;
+    const checkInDateTime = `${val.checkInDate}T${val.checkInTime || '12:00'}:00`;
+
+    const dto = {
+      placeId: this.place()!.id,
+      checkIn: checkInDateTime,
+      checkOut: val.checkOutDate ? `${val.checkOutDate}T12:00:00` : undefined,
+      guestsCount: val.guestsCount!,
+      specialRequests: val.specialRequests || '',
+    };
+
+    this.bookingService.createReservation(dto).subscribe({
+      next: () => {
+        this.isSubmittingBooking.set(false);
+        this.bookingSuccessMessage.set('Đặt chỗ thành công! Bạn có thể xem lại trong lịch sử đặt chỗ của mình.');
+        setTimeout(() => {
+          this.closeBookingModal();
+        }, 2000);
+      },
+      error: (err) => {
+        this.isSubmittingBooking.set(false);
+        this.bookingErrorMessage.set(err?.error?.message || 'Có lỗi xảy ra khi thực hiện đặt chỗ. Vui lòng thử lại.');
+      },
+    });
+  }
+
+  startChatWithOwner() {
+    if (!this.isAuthenticated()) {
+      alert('Vui lòng đăng nhập để gửi tin nhắn!');
+      return;
+    }
+    const ownerId = this.place()?.ownerId;
+    if (!ownerId) {
+      alert('Địa điểm này chưa có chủ sở hữu doanh nghiệp quản lý. Bạn không thể gửi tin nhắn.');
+      return;
+    }
+    this.chatService.startConversation(ownerId).subscribe({
+      next: (conv) => {
+        this.router.navigate(['/profile'], { queryParams: { tab: 'messages', conversationId: conv.id } });
+      },
+      error: () => {
+        alert('Không thể bắt đầu cuộc trò chuyện. Vui lòng thử lại sau.');
+      },
+    });
+  }
+
+  redirectToPartner(partnerName: string) {
+    const userId = this.authService.user()?.id;
+    const placeId = this.place()?.id;
+    if (!placeId) return;
+
+    const url = this.bookingService.getRedirectUrl(placeId, partnerName, userId);
+    const partnerLabel = partnerName === 'TRIPADVISOR' ? 'TripAdvisor' : 'Booking.com';
+
+    this.redirectingPartner.set(partnerLabel);
+    this.redirectingToPlace.set(this.place()?.name || '');
+    this.showRedirectModal.set(true);
+
+    setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        window.open(url, '_blank');
+      }
+      this.showRedirectModal.set(false);
+    }, 1500);
   }
 
   ngOnDestroy() {

@@ -237,7 +237,7 @@
                   <div class="flex justify-end">
                     <button 
                       (click)="submitResponse(r.id)"
-                      [disabled]="isSavingResponse[r.id] || !responseTexts[r.id]?.trim()"
+                      [disabled]="isSavingResponse[r.id] || !(responseTexts[r.id] || '').trim()"
                       class="btn-save-response text-[10px] font-black text-white bg-slate-900 hover:bg-slate-800 px-5 py-2.5 rounded-xl transition shadow active:scale-95 disabled:opacity-40"
                     >
                       {{ isSavingResponse[r.id] ? 'Đang lưu...' : 'Lưu Phản Hồi' }}

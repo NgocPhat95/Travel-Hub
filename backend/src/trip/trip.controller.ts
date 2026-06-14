@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -36,6 +37,15 @@ export class TripController {
   @Delete(':id')
   deleteTrip(@Param('id') id: string, @Request() req: any) {
     return this.tripService.deleteTrip(id, req.user.sub);
+  }
+
+  @Put(':id')
+  updateTrip(
+    @Param('id') id: string,
+    @Request() req: any,
+    @Body() dto: CreateTripDto,
+  ) {
+    return this.tripService.updateTrip(id, req.user.sub, dto);
   }
 
   @Post(':id/items')

@@ -53,6 +53,15 @@ export class ProfileController {
     return this.profileService.updateMe(req.user.sub, dto, avatarFile, coverFile);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Patch('account')
+  updateAccount(
+    @Request() req: { user: { sub: string } },
+    @Body() dto: { email?: string; currentPassword?: string; newPassword?: string },
+  ) {
+    return this.profileService.updateAccount(req.user.sub, dto);
+  }
+
   @Get('public/:id')
   getPublicProfile(@Param('id') id: string) {
     return this.profileService.getPublicProfile(id);

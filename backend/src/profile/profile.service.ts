@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -114,5 +115,68 @@ export class ProfileService {
     }
 
     return user;
+  }
+
+  async updateAccount(
+    userId: string,
+    dto: { email?: string; currentPassword?: string; newPassword?: string },
+  ) {
+    const data: { email?: string; passwordHash?: string } = {};
+
+    if (dto.email) {
+      const trimmedEmail = dto.email.trim().toLowerCase();
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: trimmedEmail },
+      });
+      if (existingUser && existingUser.id !== userId) {
+        throw new BadRequestException('Email này đã được sử dụng bởi tài khoản khác.');
+      }
+      data.email = trimmedEmail;
+    }
+
+    if (dto.newPassword) {
+      if (!dto.currentPassword) {
+        throw new BadRequestException('Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới.');
+      }
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { passwordHash: true },
+      });
+
+      if (!user) {
+        throw new NotFoundException('Không tìm thấy người dùng.');
+      }
+
+      // Check if user has passwordHash (might be google auth user without password)
+      if (user.passwordHash) {
+        const isMatch = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+        if (!isMatch) {
+          throw new BadRequestException('Mật khẩu hiện tại không chính xác.');
+        }
+      }
+
+      // Hash new password
+      data.passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        avatarUrl: true,
+        coverUrl: true,
+        role: true,
+        status: true,
+        userLevel: true,
+        experiencePoints: true,
+        bio: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 }

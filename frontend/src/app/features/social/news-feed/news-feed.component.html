@@ -39,6 +39,9 @@
         *ngFor="let post of posts()"
         class="bg-white rounded-[2rem] border border-slate-200/80 p-6 shadow-sm hover:border-slate-300 transition-all duration-300"
         [class.animate-post-slide]="newPostIds.has(post.id)"
+        [ngClass]="{
+          'border-blue-200 bg-gradient-to-br from-blue-50/15 to-white shadow-blue-50/50 hover:border-blue-300': post.user.email === 'booking-partner@travelhub.com'
+        }"
       >
         <!-- Post Header -->
         <div class="flex items-center justify-between mb-4">
@@ -53,13 +56,21 @@
               <h5 class="text-xs font-black text-slate-800 flex items-center gap-1.5">
                 {{ post.user.fullName }}
                 
+                <!-- Booking.com Partner verified badge -->
+                <span *ngIf="post.user.email === 'booking-partner@travelhub.com'" class="bg-blue-600 text-white text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm flex items-center gap-0.5">
+                  Đối tác Booking.com
+                </span>
+
                 <!-- Check-in place pill -->
-                <span *ngIf="post.place" class="font-bold text-slate-400 text-[10px] flex items-center gap-0.5">
+                <span *ngIf="post.place && post.user.email !== 'booking-partner@travelhub.com'" class="font-bold text-slate-400 text-[10px] flex items-center gap-0.5">
                   • 📍 check-in tại 
                   <a [routerLink]="['/place', post.place.id]" class="text-indigo-600 hover:underline">{{ post.place.name }}</a>
                 </span>
               </h5>
-              <span class="text-[9px] text-slate-400 font-bold block mt-0.5">{{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span class="text-[9px] text-slate-400 font-bold block mt-0.5">
+                {{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                <span *ngIf="post.user.email === 'booking-partner@travelhub.com'" class="text-blue-500">• Khuyên dùng từ Booking.com</span>
+              </span>
             </div>
           </div>
 
@@ -105,9 +116,57 @@
         </div>
 
         <!-- Post Content -->
-        <p class="text-xs text-slate-700 leading-relaxed font-semibold mb-4 whitespace-pre-wrap">
+        <p class="text-xs text-slate-700 leading-relaxed font-semibold mb-4 whitespace-pre-wrap" [ngClass]="{'text-blue-900': post.user.email === 'booking-partner@travelhub.com'}">
           {{ post.content }}
         </p>
+
+        <!-- Booking.com Partner Deal Card -->
+        <div *ngIf="post.user.email === 'booking-partner@travelhub.com' && post.place" class="mb-4 rounded-2xl border border-blue-100 bg-white p-4 flex flex-col md:flex-row gap-4 shadow-sm hover:border-blue-300 transition-all">
+          <!-- Thumbnail Image -->
+          <div class="w-full md:w-32 h-24 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+            <img *ngIf="post.place.images && post.place.images.length > 0" [src]="post.place.images[0]" class="w-full h-full object-cover" />
+          </div>
+          
+          <!-- Detail Content -->
+          <div class="flex-1 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[8px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                  {{ post.place.category === 'HOTEL' ? 'Khách sạn' : post.place.category === 'RESTAURANT' ? 'Nhà hàng' : 'Điểm tham quan' }}
+                </span>
+                <span class="text-[9px] font-black text-amber-500 flex items-center gap-0.5">
+                  ★ {{ post.place.ratingAverage || '4.8' }}
+                </span>
+              </div>
+              
+              <h4 class="text-xs font-black text-slate-800 hover:text-blue-600 transition">
+                <a [routerLink]="['/place', post.place.id]">{{ post.place.name }}</a>
+              </h4>
+              <p class="text-[9px] text-slate-400 font-bold mt-0.5 flex items-center gap-0.5">
+                📍 {{ post.place.address }}
+              </p>
+            </div>
+
+            <!-- Price and CTA -->
+            <div class="flex items-center justify-between border-t border-slate-50 pt-2 mt-2">
+              <div>
+                <span class="text-[8px] text-slate-400 font-bold block">Đặt phòng tiếp thị liên kết (Nhận hoa hồng)</span>
+                <span class="text-[10px] font-black text-blue-600 flex items-center gap-1">
+                  Định tuyến tới Booking.com (AID: 2311236)
+                </span>
+              </div>
+              <button 
+                (click)="bookPartnerDeal(post)"
+                class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-[9px] font-black px-4 py-2 rounded-xl transition flex items-center gap-1 shadow-md shadow-blue-200"
+              >
+                Đặt ngay
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3 h-3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Post Images Gallery -->
         <div *ngIf="post.images.length > 0" class="mb-4 rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
@@ -250,6 +309,37 @@
       >
         Lưu thay đổi
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Interstitial Secure Redirect Modal -->
+<div 
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-opacity duration-300"
+  *ngIf="showRedirectModal()"
+>
+  <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center shadow-2xl border border-slate-100 animate-scale-in">
+    <!-- Pulse Wave Loading SVG Animation -->
+    <div class="wave-container mb-6 flex justify-center items-center">
+      <div class="pulse-wave-ring ring-1"></div>
+      <div class="pulse-wave-ring ring-2"></div>
+      <div class="pulse-wave-ring ring-3"></div>
+      <div class="icon-secure bg-blue-600 text-white rounded-full p-4 shadow-lg shadow-blue-200 relative z-10">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+        </svg>
+      </div>
+    </div>
+
+    <h4 class="text-xl font-black text-slate-800 mb-2">Đang kết nối tới đối tác liên kết bảo mật</h4>
+    <p class="text-sm text-slate-500 leading-relaxed mb-4">
+      Hệ thống đang định tuyến và áp dụng mã ưu đãi tiếp thị liên kết (`aid=2311236`) để chuyển tiếp bạn tới <strong class="text-blue-600">{{ redirectingPartner() }}</strong>.
+    </p>
+
+    <!-- Simulated secure verification steps list -->
+    <div class="inline-flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 border border-slate-100">
+      <span class="dot-loading"></span>
+      Đang mã hóa dữ liệu bảo mật (SSL 256-bit)
     </div>
   </div>
 </div>

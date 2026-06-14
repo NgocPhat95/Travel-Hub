@@ -62,6 +62,40 @@ export class PlaceService {
     };
   }
 
+  async getTravelersChoice(category?: string, limit = 25): Promise<any[]> {
+    const where: any = { status: 'ACTIVE', ratingAverage: { gte: 4.0 } };
+    if (category && category !== 'ALL') {
+      where.category = category;
+    }
+
+    const places = await this.prisma.place.findMany({
+      where,
+      orderBy: { ratingAverage: 'desc' },
+      take: limit,
+      include: {
+        _count: { select: { reviews: true } },
+        partnerPrices: {
+          where: { partnerName: 'BOOKING_COM' },
+          take: 1,
+        },
+      },
+    });
+
+    return places.map((place, index) => {
+      const { _count, partnerPrices, ...rest } = place;
+      const isBestOfBest = place.ratingAverage >= 4.8 && _count.reviews >= 3;
+      return {
+        ...rest,
+        rank: index + 1,
+        reviewCount: _count.reviews,
+        isTravelersChoice: true,
+        isBestOfBest,
+        bookingPrice: partnerPrices.length > 0 ? partnerPrices[0].price : null,
+        bookingLink: partnerPrices.length > 0 ? partnerPrices[0].deepLink : null,
+      };
+    });
+  }
+
   async getPlaceDetail(id: string, clientIp?: string) {
     const place = await this.prisma.place.findUnique({
       where: { id },

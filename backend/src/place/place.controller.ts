@@ -21,6 +21,14 @@ export class PlaceController {
     return this.placeService.getPlaces(dto);
   }
 
+  @Get('travelers-choice')
+  getTravelersChoice(
+    @Query('category') category?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.placeService.getTravelersChoice(category, limit ? parseInt(limit) : 25);
+  }
+
   @Get(':id')
   getPlaceDetail(
     @Param('id') id: string,

@@ -28,6 +28,9 @@ export class AppComponent implements OnInit {
   showAuthModal = false;
   showNavbarSearch = signal(false);
   isHomePage = signal(false);
+  showProfileDropdown = signal(false);
+  showExploreDropdown = signal(false);
+
 
   searchControl = new FormControl('');
   suggestions = signal<Place[]>([]);
@@ -143,7 +146,7 @@ export class AppComponent implements OnInit {
     const query = this.searchControl.value?.trim();
     if (!query) return;
     this.showDropdown.set(false);
-    this.router.navigate(['/places'], { queryParams: { q: query } });
+    this.router.navigate(['/travelers-choice'], { queryParams: { q: query } });
   }
 
   highlightMatch(text: string): string {
@@ -161,11 +164,17 @@ export class AppComponent implements OnInit {
   onClickOutside(event: Event) {
     if (!this.eRef.nativeElement.contains(event.target)) {
       this.showDropdown.set(false);
+      this.showProfileDropdown.set(false);
     }
   }
 
+  toggleProfileDropdown(event: Event) {
+    event.stopPropagation();
+    this.showProfileDropdown.update(v => !v);
+  }
+
   selectNavbarTab(category: string) {
-    this.router.navigate(['/places'], { queryParams: { category } });
+    this.router.navigate(['/travelers-choice'], { queryParams: { category } });
   }
 
   openQuickReviewSearch() {

@@ -149,6 +149,12 @@ export class AuthService {
     );
   }
 
+  updateAccount(payload: { email?: string; currentPassword?: string; newPassword?: string }) {
+    return this.http.patch<AuthUser>(`${this.profileBase}/account`, payload).pipe(
+      tap((user) => this.setUser(user)),
+    );
+  }
+
   getPublicProfile(userId: string) {
     return this.http.get<PublicProfile>(`${this.profileBase}/public/${userId}`);
   }
@@ -159,6 +165,11 @@ export class AuthService {
 
   getAccessToken() {
     return this.tokenSignal();
+  }
+
+  updateAccessToken(token: string) {
+    this.tokenSubject.next(token);
+    this.tokenSignal.set(token);
   }
 
   private setUser(user: AuthUser | null) {

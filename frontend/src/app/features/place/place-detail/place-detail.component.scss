@@ -6,3 +6,63 @@
 .animate-fade-in {
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ====== REDIRECT MODAL ====== */
+.wave-container { 
+  position: relative; 
+  width: 100px; 
+  height: 100px; 
+}
+
+.pulse-wave-ring {
+  position: absolute; 
+  top: 50%; 
+  left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse-ring 2s ease-out infinite;
+  
+  &.ring-1 { 
+    width: 80px; 
+    height: 80px; 
+    animation-delay: 0s; 
+    border: 2px solid rgba(0, 170, 108, 0.4);
+  }
+  &.ring-2 { 
+    width: 104px; 
+    height: 104px; 
+    animation-delay: 0.45s; 
+    border: 2px solid rgba(0, 170, 108, 0.3);
+  }
+  &.ring-3 { 
+    width: 128px; 
+    height: 128px; 
+    animation-delay: 0.9s; 
+    border: 2px solid rgba(0, 170, 108, 0.2);
+  }
+}
+
+@keyframes pulse-ring {
+  0% { transform: translate(-50%, -50%) scale(0.75); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
+}
+
+.icon-secure { 
+  position: relative; 
+  z-index: 10; 
+}
+
+.dot-loading {
+  display: inline-block;
+  width: 8px; 
+  height: 8px;
+  border-radius: 50%;
+  background: #64748b;
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.5); opacity: 0.35; }
+}
+

@@ -58,3 +58,79 @@
     linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
+
+// Scale-in animation for modal box
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+// Wave/pulse styles
+.wave-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+
+  .pulse-wave-ring {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(59, 130, 246, 0.35); // Blue transparent for Booking
+    opacity: 0;
+    transform: scale(1);
+    animation: pulseWave 1.8s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
+    z-index: 1;
+
+    &.ring-2 {
+      animation-delay: 0.6s;
+    }
+    &.ring-3 {
+      animation-delay: 1.2s;
+    }
+  }
+}
+
+@keyframes pulseWave {
+  0% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+// Flashing check dot
+.dot-loading {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2563eb;
+  animation: dotFlash 0.8s infinite alternate;
+}
+
+@keyframes dotFlash {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}

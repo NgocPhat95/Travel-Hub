@@ -9,6 +9,7 @@ export interface Post {
     id: string;
     fullName: string;
     avatarUrl?: string | null;
+    email?: string | null;
   };
   content: string;
   placeId?: string | null;
@@ -16,6 +17,9 @@ export interface Post {
     id: string;
     name: string;
     address: string;
+    category?: string | null;
+    images?: string[] | null;
+    ratingAverage?: number | null;
   } | null;
   tripId?: string | null;
   trip?: {

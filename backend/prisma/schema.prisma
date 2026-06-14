@@ -66,6 +66,9 @@ model User {
   posts            Post[]
   postLikes        PostLike[]
   postComments     PostComment[]
+  bookings         Booking[]
+  conversations    ConversationParticipant[]
+  sentMessages     Message[]
 
   @@map("users")
 }
@@ -103,6 +106,7 @@ model Place {
   owner         User?          @relation("UserOwnedPlaces", fields: [ownerId], references: [id], onDelete: SetNull)
   businessClaims BusinessClaim[]
   posts          Post[]
+  bookings       Booking[]
 
   @@map("places")
 }
@@ -258,6 +262,7 @@ enum PartnerName {
   AGODA
   BOOKING_COM
   EXPEDIA
+  TRIPADVISOR
 }
 
 model PartnerPrice {
@@ -380,4 +385,63 @@ model PostComment {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("post_comments")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model Booking {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId         String        @map("place_id")
+  place           Place         @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  checkIn         DateTime      @map("check_in")
+  checkOut        DateTime?     @map("check_out")
+  guestsCount     Int           @map("guests_count")
+  totalPrice      Float?        @map("total_price")
+  specialRequests String?       @map("special_requests")
+  status          BookingStatus @default(PENDING)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("bookings")
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String       @map("user_id")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String       @map("sender_id")
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content        String       @map("content")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@map("messages")
 }

@@ -27,6 +27,7 @@ export interface Place {
   distance?: number; // Calculated on coordinates distance search
   isTravelersChoice?: boolean;
   travelerPhotos?: string[];
+  ownerId?: string;
 }
 
 @Injectable({

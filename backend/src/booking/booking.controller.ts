@@ -1,10 +1,16 @@
-import { Controller, Get, Param, Query, Req, Res } from '@nestjs/common';
-import type { Response, Request } from 'express';
+import { Controller, Get, Param, Query, Req, Res, Post, Body, Patch, UseGuards } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { BookingService } from './booking.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('booking')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
+
+  @Post('sync-partner-feed')
+  async syncPartnerFeed() {
+    return this.bookingService.syncBookingFeeds();
+  }
 
   @Get('places/:placeId/prices')
   async getPrices(@Param('placeId') placeId: string) {
@@ -41,4 +47,39 @@ export class BookingController {
     // 4. Perform 302 Redirect
     return res.redirect(302, redirectUrl);
   }
+
+  @Post('reserve')
+  @UseGuards(JwtAuthGuard)
+  async reserve(
+    @Req() req: any,
+    @Body() dto: {
+      placeId: string;
+      checkIn: string;
+      checkOut?: string;
+      guestsCount: number;
+      totalPrice?: number;
+      specialRequests?: string;
+    },
+  ) {
+    const userId = req.user.sub;
+    return this.bookingService.createReservation(userId, dto);
+  }
+
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  async getMyBookings(@Req() req: any) {
+    const userId = req.user.sub;
+    return this.bookingService.getMyBookings(userId);
+  }
+
+  @Patch(':id/cancel')
+  @UseGuards(JwtAuthGuard)
+  async cancel(
+    @Param('id') bookingId: string,
+    @Req() req: any,
+  ) {
+    const userId = req.user.sub;
+    return this.bookingService.cancelBooking(bookingId, userId);
+  }
 }
+

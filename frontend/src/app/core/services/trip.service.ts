@@ -66,6 +66,10 @@ export class TripService {
     return this.http.delete<{ success: boolean }>(`${this.tripBase}/${id}`);
   }
 
+  updateTrip(id: string, dto: { title: string; description?: string; startDate: string; endDate: string }): Observable<Trip> {
+    return this.http.put<Trip>(`${this.tripBase}/${id}`, dto);
+  }
+
   addTripItem(
     tripId: string,
     dto: { placeId: string; dayNumber: number; sequenceOrder: number; note?: string }

@@ -1,0 +1,364 @@
+<div class="max-w-5xl mx-auto px-6 py-10 font-sans min-h-screen">
+  
+  <!-- Page Header -->
+  <div class="mb-10 select-none animate-fade-in">
+    <h1 class="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+      Chuyến đi
+      <span class="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+    </h1>
+    <p class="text-xs text-slate-400 font-semibold mt-1.5">Lên kế hoạch du lịch cá nhân, chia sẻ lịch trình và cùng cộng tác với bạn bè.</p>
+  </div>
+
+  <!-- Create New Trip bar (Exactly like the TripAdvisor screenshot layout but elevated with premium styles) -->
+  <div class="mb-8 select-none animate-fade-in-delayed">
+    <button 
+      (click)="openCreateModal()"
+      class="w-full flex items-center justify-center gap-3 py-6 bg-white hover:bg-slate-50/50 border border-slate-200/80 hover:border-cyan-400 text-slate-800 hover:text-cyan-600 rounded-3xl transition-all duration-300 shadow-sm hover:shadow-md hover:shadow-cyan-100/50 active:scale-[0.99] select-none group"
+    >
+      <div class="p-1.5 rounded-full bg-slate-50 group-hover:bg-cyan-50 border border-slate-100 group-hover:border-cyan-150 transition-all duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-4.5 h-4.5 text-slate-500 group-hover:text-cyan-600 transition duration-300">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </div>
+      <span class="text-xs font-black uppercase tracking-wider text-slate-700 group-hover:text-cyan-600 transition duration-300">Tạo chuyến đi mới</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="flex flex-col items-center py-24 bg-white rounded-3xl border border-slate-200/60 shadow-sm select-none">
+    <div class="relative w-12 h-12 mb-4">
+      <div class="absolute inset-0 rounded-full border-4 border-cyan-100"></div>
+      <div class="absolute inset-0 rounded-full border-4 border-cyan-500 border-t-transparent animate-spin"></div>
+    </div>
+    <p class="text-xs font-black text-slate-450 uppercase tracking-widest">Đang tải các chuyến đi của bạn...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading() && trips().length === 0" class="bg-white rounded-3xl border border-slate-200/80 p-14 text-center shadow-sm max-w-xl mx-auto mt-6 animate-scale-up select-none">
+    <div class="w-20 h-20 rounded-full bg-cyan-50 border border-cyan-100 flex items-center justify-center mx-auto mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-10 h-10 text-cyan-500">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253" />
+      </svg>
+    </div>
+    <h4 class="text-base font-black text-slate-800 mb-2">Chưa có hành trình du lịch</h4>
+    <p class="text-xs text-slate-450 max-w-sm mx-auto leading-relaxed mb-8">
+      Hãy khởi tạo chuyến đi đầu tiên để lập lịch trình tham quan chi tiết, gieo ý tưởng và kết nối những người đồng hành.
+    </p>
+    <button 
+      (click)="openCreateModal()"
+      class="rounded-2xl bg-slate-900 hover:bg-cyan-600 hover:shadow-lg hover:shadow-cyan-100 text-white font-black text-xs px-8 py-3.5 transition duration-300 active:scale-95 shadow-md shadow-slate-100"
+    >
+      Bắt đầu lập chuyến đi
+    </button>
+  </div>
+
+  <!-- Trip Cards List (Exact layout of TripAdvisor screenshot) -->
+  <div *ngIf="!isLoading() && trips().length > 0" class="space-y-6">
+    <div 
+      *ngFor="let trip of trips()" 
+      class="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-0.5 hover:border-cyan-200/80 transition-all duration-300 flex flex-col md:flex-row relative group/card"
+    >
+      <!-- Trip Cover Image (left) -->
+      <div class="relative w-full md:w-72 h-48 flex-shrink-0 bg-slate-50 overflow-hidden">
+        <img [src]="getTripCoverImage(trip)" class="w-full h-full object-cover transition duration-700 group-hover/card:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-80 group-hover/card:opacity-95 transition-opacity duration-300"></div>
+        
+        <!-- Duration Badge (Exactly: "Sau X ngày" / "X ngày" layout) -->
+        <span class="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3.5 py-1.5 rounded-xl text-[9px] font-black text-slate-800 shadow-sm select-none uppercase tracking-wider flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-cyan-650" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Sau {{ getTripDuration(trip) }} ngày
+        </span>
+      </div>
+
+      <!-- Trip Info (middle/right) -->
+      <div class="flex-1 p-6 flex flex-col justify-between">
+        <div>
+          <!-- Title & Dropdown Actions Header -->
+          <div class="flex justify-between items-start gap-4 mb-2">
+            <a 
+              [routerLink]="['/trip', trip.id]"
+              class="text-xl font-black text-slate-900 group-hover/card:text-indigo-650 transition duration-300 tracking-tight pr-8 line-clamp-1"
+            >
+              {{ trip.title }}
+            </a>
+
+            <!-- Dropdown Options Button (top right) -->
+            <div class="relative flex-shrink-0">
+              <button 
+                type="button" 
+                (click)="toggleTripDropdown(trip.id, $event)"
+                class="p-2 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition duration-200 active:scale-95"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4.5 h-4.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                </svg>
+              </button>
+
+              <!-- Dropdown content overlay -->
+              <div 
+                *ngIf="activeDropdownTripId() === trip.id" 
+                class="absolute right-0 mt-1 w-44 rounded-2xl bg-white border border-slate-100 shadow-xl py-1.5 z-20 text-left animate-scale-in"
+              >
+                <button 
+                  type="button" 
+                  (click)="openEditModal(trip, $event)"
+                  class="w-full px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-cyan-600 transition flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-slate-500">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                  </svg>
+                  Chỉnh sửa
+                </button>
+                <button 
+                  type="button" 
+                  (click)="deleteTrip(trip.id, $event)"
+                  [disabled]="!isOwner(trip)"
+                  class="w-full px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-rose-600 transition border-t border-slate-50 flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                  Xóa chuyến đi
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <p *ngIf="trip.description" class="text-xs text-slate-500 font-semibold mb-4 line-clamp-2 max-w-xl leading-relaxed">
+            {{ trip.description }}
+          </p>
+
+          <!-- Metadata: Calendar Dates & Location Pin (Matches TripAdvisor screenshot exactly) -->
+          <div class="flex flex-wrap items-center gap-3 text-xs font-bold select-none mb-4">
+            <!-- Calendar Icon + Date -->
+            <span class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 text-slate-600 px-3 py-1.5 rounded-xl">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-indigo-650">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+              </svg>
+              {{ formatTripDate(trip.startDate) }}
+            </span>
+
+            <!-- Location Pin + Guess/Place location -->
+            <span class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 text-slate-650 px-3 py-1.5 rounded-xl">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-cyan-650">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z" />
+              </svg>
+              {{ getTripLocation(trip) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Footer row: Creator Name & Collaborators Avatars (TripAdvisor alignment) -->
+        <div class="flex items-center justify-between border-t border-slate-100 pt-4 mt-4 select-none">
+          <div class="flex items-center gap-2 text-xs font-bold text-slate-450">
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider">Tạo bởi:</span>
+            <span class="text-slate-700">{{ trip.owner?.fullName || 'Tôi' }}</span>
+          </div>
+
+          <!-- Avatar group overlaps -->
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] text-slate-400 font-bold" *ngIf="trip.collaborators.length > 0">
+              +{{ trip.collaborators.length }} người tham gia
+            </span>
+
+            <div class="flex items-center -space-x-2.5">
+              <!-- Owner avatar -->
+              <div 
+                class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-650 shadow-sm relative z-10"
+                [title]="trip.owner?.fullName || 'Chủ sở hữu'"
+              >
+                <img *ngIf="trip.owner?.avatarUrl" [src]="trip.owner?.avatarUrl" class="w-full h-full object-cover" />
+                <span *ngIf="!trip.owner?.avatarUrl">{{ (trip.owner?.fullName || 'Owner').charAt(0) }}</span>
+              </div>
+              <!-- Collaborators avatars -->
+              <div 
+                *ngFor="let col of trip.collaborators; let i = index" 
+                class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-cyan-50 flex items-center justify-center text-[10px] font-black text-cyan-600 shadow-sm"
+                [style.z-index]="5 - i"
+                [title]="col.user.fullName"
+              >
+                <img *ngIf="col.user.avatarUrl" [src]="col.user.avatarUrl" class="w-full h-full object-cover" />
+                <span *ngIf="!col.user.avatarUrl">{{ col.user.fullName.charAt(0) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Glassmorphism Create Trip Modal -->
+<div 
+  *ngIf="showCreateModal()" 
+  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 font-sans select-none animate-fade-in"
+>
+  <div class="relative w-full max-w-lg bg-white/95 rounded-3xl p-6.5 shadow-2xl border border-white/80 flex flex-col space-y-4 animate-scale-up">
+    <!-- Header -->
+    <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+      <h3 class="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-cyan-600">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Tạo chuyến đi mới
+      </h3>
+      <button 
+        (click)="closeCreateModal()"
+        class="rounded-xl p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4.5 h-4.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="createForm" (ngSubmit)="submitCreateTrip()" class="space-y-4">
+      <div class="space-y-1.5">
+        <label class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Tên chuyến đi *</label>
+        <input 
+          type="text" 
+          formControlName="title"
+          class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-50 transition duration-300"
+          placeholder="Ví dụ: Go Đà Lạt 2026, Du Hè Nha Trang..."
+        />
+        <p *ngIf="createForm.get('title')?.touched && createForm.get('title')?.errors?.['required']" class="text-[9px] text-rose-500 font-bold">Vui lòng nhập tên chuyến đi.</p>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Mô tả hành trình</label>
+        <textarea 
+          formControlName="description"
+          rows="3.5"
+          class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-xs text-slate-800 font-semibold outline-none focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-50 resize-none transition duration-300"
+          placeholder="Mô tả mục tiêu chuyến đi, ý định lưu trú, địa điểm muốn khám phá..."
+        ></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+          <label class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Ngày bắt đầu *</label>
+          <input 
+            type="date" 
+            formControlName="startDate"
+            class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-50 transition duration-300"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Ngày kết thúc *</label>
+          <input 
+            type="date" 
+            formControlName="endDate"
+            class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-50 transition duration-300"
+          />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-4.5 border-t border-slate-100">
+        <button 
+          type="button" 
+          (click)="closeCreateModal()"
+          class="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 font-bold text-xs transition duration-200 active:scale-95"
+        >
+          Hủy bỏ
+        </button>
+        <button 
+          type="submit" 
+          class="rounded-xl bg-slate-900 hover:bg-indigo-650 hover:shadow-lg hover:shadow-indigo-100 text-white px-7 py-3 font-black text-xs transition duration-200 active:scale-95"
+        >
+          Bắt đầu lập kế hoạch
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Glassmorphism Edit Trip Modal -->
+<div 
+  *ngIf="showEditModal() && selectedTripForEdit()" 
+  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 font-sans select-none animate-fade-in"
+>
+  <div class="relative w-full max-w-lg bg-white/95 rounded-3xl p-6.5 shadow-2xl border border-white/80 flex flex-col space-y-4 animate-scale-up">
+    <!-- Header -->
+    <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+      <h3 class="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-indigo-650">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+        </svg>
+        Chỉnh sửa chuyến đi
+      </h3>
+      <button 
+        (click)="closeEditModal()"
+        class="rounded-xl p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4.5 h-4.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="editForm" (ngSubmit)="submitEditTrip()" class="space-y-4">
+      <div class="space-y-1.5">
+        <label class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Tên chuyến đi *</label>
+        <input 
+          type="text" 
+          formControlName="title"
+          class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-50 transition duration-300"
+        />
+        <p *ngIf="editForm.get('title')?.touched && editForm.get('title')?.errors?.['required']" class="text-[9px] text-rose-500 font-bold">Vui lòng nhập tên chuyến đi.</p>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Mô tả hành trình</label>
+        <textarea 
+          formControlName="description"
+          rows="3.5"
+          class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-xs text-slate-800 font-semibold outline-none focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-50 resize-none transition duration-300"
+        ></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+          <label class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Ngày bắt đầu *</label>
+          <input 
+            type="date" 
+            formControlName="startDate"
+            class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-50 transition duration-300"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-[9px] font-black text-slate-450 uppercase tracking-widest block">Ngày kết thúc *</label>
+          <input 
+            type="date" 
+            formControlName="endDate"
+            class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-xs text-slate-800 font-bold outline-none focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-50 transition duration-300"
+          />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-4.5 border-t border-slate-100">
+        <button 
+          type="button" 
+          (click)="closeEditModal()"
+          class="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 font-bold text-xs transition duration-200 active:scale-95"
+        >
+          Hủy bỏ
+        </button>
+        <button 
+          type="submit" 
+          class="rounded-xl bg-slate-900 hover:bg-indigo-650 hover:shadow-lg hover:shadow-indigo-100 text-white px-7 py-3 font-black text-xs transition duration-200 active:scale-95"
+        >
+          Lưu thay đổi
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

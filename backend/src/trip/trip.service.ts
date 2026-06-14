@@ -50,6 +50,13 @@ export class TripService {
         ],
       },
       include: {
+        owner: {
+          select: {
+            id: true,
+            fullName: true,
+            avatarUrl: true,
+          },
+        },
         collaborators: {
           include: {
             user: {
@@ -58,6 +65,16 @@ export class TripService {
                 fullName: true,
                 avatarUrl: true,
                 email: true,
+              },
+            },
+          },
+        },
+        items: {
+          take: 1,
+          include: {
+            place: {
+              select: {
+                images: true,
               },
             },
           },
@@ -137,6 +154,19 @@ export class TripService {
     });
 
     return { success: true };
+  }
+
+  async updateTrip(tripId: string, userId: string, dto: CreateTripDto) {
+    await this.checkEditPermission(tripId, userId);
+    return this.prisma.trip.update({
+      where: { id: tripId },
+      data: {
+        title: dto.title,
+        description: dto.description,
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
+      },
+    });
   }
 
   async addTripItem(tripId: string, userId: string, dto: AddTripItemDto) {

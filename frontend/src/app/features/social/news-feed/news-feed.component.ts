@@ -8,6 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { PlaceService } from '../../../core/services/place.service';
 import { TripService, Trip } from '../../../core/services/trip.service';
 import { Place } from '../../../core/services/search.service';
+import { BookingService } from '../../../core/services/booking.service';
 import { PostCreatorComponent } from '../post-creator/post-creator.component';
 import { LikeCommentComponent } from '../like-comment/like-comment.component';
 
@@ -24,7 +25,13 @@ export class NewsFeedComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly placeService = inject(PlaceService);
   private readonly tripService = inject(TripService);
+  private readonly bookingService = inject(BookingService);
   private readonly router = inject(Router);
+
+  // Secure Redirect Modal States
+  showRedirectModal = signal(false);
+  redirectingPartner = signal<string>('');
+  redirectUrl = '';
 
   posts = signal<Post[]>([]);
   isLoading = signal(true);
@@ -177,5 +184,22 @@ export class NewsFeedComponent implements OnInit, OnDestroy {
 
   navigateToTrip(tripId: string) {
     this.router.navigate(['/trip', tripId]);
+  }
+
+  bookPartnerDeal(post: Post) {
+    if (!post.placeId) return;
+    const userId = this.currentUserId();
+    const url = this.bookingService.getRedirectUrl(post.placeId, 'BOOKING_COM', userId || undefined);
+    
+    this.redirectingPartner.set('Booking.com');
+    this.redirectUrl = url;
+    this.showRedirectModal.set(true);
+
+    setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        window.open(url, '_blank');
+      }
+      this.showRedirectModal.set(false);
+    }, 1500);
   }
 }

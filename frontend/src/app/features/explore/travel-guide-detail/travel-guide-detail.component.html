@@ -1,0 +1,90 @@
+@if (notFound()) {
+  <div class="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800">
+    <div class="text-6xl mb-4">📭</div>
+    <h2 class="text-2xl font-bold mb-2">Không tìm thấy bài viết</h2>
+    <a routerLink="/travel-guides" class="text-[#00aa6c] font-bold hover:underline">← Quay lại Cẩm nang</a>
+  </div>
+}
+
+@if (article()) {
+  <div class="guide-detail-page min-h-screen font-sans">
+
+    <!-- Hero Image -->
+    <div class="article-hero">
+      <img [src]="article()!.coverImage" [alt]="article()!.title" class="hero-image">
+      <div class="hero-overlay"></div>
+      <div class="hero-meta-bar">
+        <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <a routerLink="/travel-guides" class="back-link">
+            ← Cẩm nang du lịch
+          </a>
+          <span class="read-time-badge">📖 {{ article()!.readTime }} phút đọc</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Article Container -->
+    <div class="max-w-4xl mx-auto px-6 -mt-24 relative z-10 pb-20">
+      <div class="article-card">
+        <!-- Category -->
+        <div class="article-category">
+          <span class="cat-icon">{{ getCategoryIcon(article()!.category) }}</span>
+          <span>{{ getCategoryLabel(article()!.category) }}</span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="article-title">{{ article()!.title }}</h1>
+
+        <!-- Meta -->
+        <div class="article-meta">
+          <img [src]="article()!.author.avatar" alt="" class="w-10 h-10 rounded-full border-2 border-slate-100">
+          <div>
+            <p class="author-name">{{ article()!.author.name }}</p>
+            <p class="article-date">{{ article()!.date }} · {{ article()!.readTime }} phút đọc</p>
+          </div>
+          <div class="meta-divider"></div>
+          <div class="tags-row">
+            @for (tag of article()!.tags; track tag) {
+              <span class="tag-chip"># {{ tag }}</span>
+            }
+          </div>
+        </div>
+
+        <hr class="article-divider">
+
+        <!-- Article Content -->
+        <div class="article-body prose-content" [innerHTML]="article()!.content"></div>
+
+        <hr class="article-divider">
+
+        <!-- Back & Share -->
+        <div class="article-actions">
+          <a routerLink="/travel-guides" class="back-btn">
+            ← Xem thêm bài viết
+          </a>
+        </div>
+      </div>
+
+      <!-- Related Articles -->
+      @if (article()!.relatedSlugs && getRelatedArticles(article()!.relatedSlugs).length > 0) {
+        <div class="related-section">
+          <h3 class="related-title">Bài viết liên quan</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            @for (rel of getRelatedArticles(article()!.relatedSlugs); track rel.slug) {
+              <a [routerLink]="['/travel-guides', rel.slug]" class="related-card group">
+                <div class="related-img-wrapper">
+                  <img [src]="rel.coverImage" [alt]="rel.title" class="related-img">
+                </div>
+                <div class="related-body">
+                  <span class="related-cat">{{ getCategoryIcon(rel.category) }} {{ getCategoryLabel(rel.category) }}</span>
+                  <h4 class="related-card-title">{{ rel.title }}</h4>
+                  <span class="related-read">📖 {{ rel.readTime }} phút đọc</span>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

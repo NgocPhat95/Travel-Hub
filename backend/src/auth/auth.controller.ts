@@ -34,6 +34,11 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @Post('refresh')
+  refresh(@Body('refreshToken') refreshToken: string): Promise<{ accessToken: string }> {
+    return this.authService.refreshAccessToken(refreshToken);
+  }
+
   @Post('forgot-password')
   forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
     return this.authService.forgotPassword(dto.email);
@@ -57,3 +62,4 @@ export class AuthController {
     return this.authService.loginWithGoogle(googleUser);
   }
 }
+

@@ -51,34 +51,55 @@
     </div>
 
     <!-- TripAdvisor Style Tab bar -->
-    <div class="flex border-b border-slate-200/80 mt-10 mb-8">
+    <div class="flex flex-wrap border-b border-slate-200/80 mt-10 mb-8 select-none">
       <button 
         (click)="setTab('stats')"
         [class.trip-tab-active]="activeTab() === 'stats'"
-        class="px-6 py-3 font-bold text-sm text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
+        class="px-5 py-3 font-bold text-xs uppercase tracking-wider text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
       >
-        Thống kê & Tiến trình
+        📈 Thống kê
       </button>
       <button 
         (click)="setTab('posts')"
         [class.trip-tab-active]="activeTab() === 'posts'"
-        class="px-6 py-3 font-bold text-sm text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
+        class="px-5 py-3 font-bold text-xs uppercase tracking-wider text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
       >
-        Bài viết của tôi
+        📝 Bài viết
+      </button>
+      <button 
+        (click)="setTab('messages')"
+        [class.trip-tab-active]="activeTab() === 'messages'"
+        class="px-5 py-3 font-bold text-xs uppercase tracking-wider text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
+      >
+        💬 Tin nhắn
+      </button>
+      <button 
+        (click)="setTab('bookings')"
+        [class.trip-tab-active]="activeTab() === 'bookings'"
+        class="px-5 py-3 font-bold text-xs uppercase tracking-wider text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
+      >
+        📅 Đặt chỗ
       </button>
       <button 
         (click)="setTab('edit')"
         [class.trip-tab-active]="activeTab() === 'edit'"
-        class="px-6 py-3 font-bold text-sm text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
+        class="px-5 py-3 font-bold text-xs uppercase tracking-wider text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
       >
-        Chỉnh sửa hồ sơ
+        👤 Hồ sơ
+      </button>
+      <button 
+        (click)="setTab('account')"
+        [class.trip-tab-active]="activeTab() === 'account'"
+        class="px-5 py-3 font-bold text-xs uppercase tracking-wider text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
+      >
+        ⚙️ Tài khoản
       </button>
       <button 
         (click)="setTab('business')"
         [class.trip-tab-active]="activeTab() === 'business'"
-        class="px-6 py-3 font-bold text-sm text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
+        class="px-5 py-3 font-bold text-xs uppercase tracking-wider text-slate-500 hover:text-slate-900 transition duration-200 focus:outline-none"
       >
-        Doanh nghiệp (B2B)
+        💼 B2B
       </button>
     </div>
 
@@ -179,6 +200,315 @@
               class="rounded-2xl bg-slate-900 hover:bg-slate-800 px-8 py-3.5 font-bold text-white shadow-md transition disabled:opacity-50"
             >
               {{ isSaving() ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    } @else if (activeTab() === 'business') {
+      <app-business-dashboard></app-business-dashboard>
+    } @else if (activeTab() === 'messages') {
+      <div class="rounded-3xl border border-slate-200/80 bg-white shadow-sm flex flex-col md:flex-row overflow-hidden min-h-[550px] max-h-[650px] animate-fade-in">
+        <!-- Left Sidebar: Conversations List -->
+        <div class="w-full md:w-80 border-r border-slate-100 flex flex-col bg-white">
+          <div class="p-4.5 border-b border-slate-100 select-none bg-slate-50/50">
+            <h4 class="text-xs font-black text-slate-800 tracking-tight">Hộp thư tin nhắn</h4>
+          </div>
+          <div class="flex-1 overflow-y-auto divide-y divide-slate-50">
+            @for (conv of conversations(); track conv.id) {
+              <div 
+                (click)="selectConversation(conv.id)"
+                [class.bg-slate-50]="activeConversationId() === conv.id"
+                class="p-4 flex items-center gap-3 cursor-pointer hover:bg-slate-50/50 transition duration-200"
+              >
+                <!-- Chat partner avatar -->
+                <div class="h-9 w-9 rounded-full overflow-hidden bg-slate-200 flex-shrink-0 flex items-center justify-center font-bold text-slate-650 text-xs">
+                  <img *ngIf="getChatPartner(conv)?.avatarUrl" [src]="getChatPartner(conv)?.avatarUrl" class="w-full h-full object-cover" />
+                  <span *ngIf="!getChatPartner(conv)?.avatarUrl">{{ getChatPartner(conv)?.fullName?.charAt(0) || 'U' }}</span>
+                </div>
+                
+                <!-- Chat partner info & last message -->
+                <div class="min-w-0 flex-1">
+                  <div class="flex justify-between items-baseline">
+                    <h5 class="text-xs font-black text-slate-800 truncate">{{ getChatPartner(conv)?.fullName || 'Người dùng' }}</h5>
+                    <span class="text-[9px] text-slate-400 font-bold select-none">{{ conv.updatedAt | date:'dd/MM' }}</span>
+                  </div>
+                  <p class="text-[10px] text-slate-500 truncate mt-1 leading-snug">
+                    {{ conv.messages?.[0]?.content || 'Chưa có tin nhắn' }}
+                  </p>
+                </div>
+              </div>
+            } @empty {
+              <div class="text-center py-16 text-slate-400 text-xs font-bold select-none">
+                Chưa có hội thoại nào
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Right Pane: Active Chat Window -->
+        <div class="flex-1 flex flex-col bg-slate-50/20">
+          @if (activeConversationId() && activeChatPartner) {
+            <!-- Active Chat Header -->
+            <div class="p-4 bg-white border-b border-slate-100 flex items-center gap-3 select-none">
+              <div class="h-9 w-9 rounded-full overflow-hidden bg-slate-200 flex items-center justify-center font-bold text-slate-650 text-xs flex-shrink-0">
+                <img *ngIf="activeChatPartner.avatarUrl" [src]="activeChatPartner.avatarUrl" class="w-full h-full object-cover" />
+                <span *ngIf="!activeChatPartner.avatarUrl">{{ activeChatPartner.fullName.charAt(0) }}</span>
+              </div>
+              <div>
+                <h5 class="text-xs font-black text-slate-800 leading-none">{{ activeChatPartner.fullName }}</h5>
+                <span class="text-[9px] text-slate-400 font-bold block mt-1">{{ activeChatPartner.email }}</span>
+              </div>
+            </div>
+
+            <!-- Message History Thread -->
+            <div 
+              id="chat-messages-container"
+              class="flex-1 p-6 overflow-y-auto space-y-4"
+            >
+              @for (msg of messages(); track msg.id) {
+                <!-- Message Row -->
+                <div 
+                  [class.justify-end]="msg.senderId === user()?.id"
+                  class="flex gap-3 items-end"
+                >
+                  <!-- Partner avatar (left side message only) -->
+                  <div 
+                    *ngIf="msg.senderId !== user()?.id"
+                    class="h-7 w-7 rounded-full overflow-hidden bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500 flex-shrink-0"
+                  >
+                    <img *ngIf="msg.sender.avatarUrl" [src]="msg.sender.avatarUrl" class="w-full h-full object-cover" />
+                    <span *ngIf="!msg.sender.avatarUrl">{{ msg.sender.fullName.charAt(0) }}</span>
+                  </div>
+
+                  <!-- Message bubble -->
+                  <div class="max-w-[70%] flex flex-col space-y-1">
+                    <div 
+                      [ngClass]="msg.senderId === user()?.id ? 'bg-slate-900 text-white rounded-2xl rounded-br-sm' : 'bg-white border border-slate-100 text-slate-850 rounded-2xl rounded-bl-sm'"
+                      class="px-4 py-2.5 text-xs font-semibold shadow-sm leading-relaxed"
+                    >
+                      {{ msg.content }}
+                    </div>
+                    <span 
+                      [class.text-right]="msg.senderId === user()?.id"
+                      class="text-[8px] text-slate-400 font-bold px-1 select-none"
+                    >
+                      {{ msg.createdAt | date:'HH:mm' }}
+                    </span>
+                  </div>
+                </div>
+              } @empty {
+                <div class="text-center py-20 text-slate-400 text-xs font-semibold select-none">
+                  Hãy gửi tin nhắn đầu tiên để bắt đầu cuộc trò chuyện.
+                </div>
+              }
+            </div>
+
+            <!-- Message Send Input bar -->
+            <div class="p-4 bg-white border-t border-slate-100">
+              <form (ngSubmit)="sendChatMessage()" class="flex items-center gap-3">
+                <input 
+                  type="text" 
+                  [formControl]="messageInput"
+                  class="flex-1 rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-xs text-slate-800 font-semibold outline-none focus:border-cyan-400 focus:bg-white transition"
+                  placeholder="Nhập tin nhắn..."
+                />
+                <button 
+                  type="submit"
+                  [disabled]="!messageInput.value?.trim()"
+                  class="rounded-2xl bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white px-5 py-3 font-bold text-xs transition active:scale-95 shadow"
+                >
+                  Gửi
+                </button>
+              </form>
+            </div>
+          } @else {
+            <!-- Conversation Not Selected Empty state -->
+            <div class="flex-1 flex flex-col items-center justify-center p-8 select-none">
+              <svg class="w-14 h-14 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+              </svg>
+              <h4 class="text-xs font-black text-slate-650">Chọn cuộc trò chuyện</h4>
+              <p class="text-[10px] text-slate-400 font-semibold mt-1">Chọn một người liên hệ từ danh sách bên trái để xem tin nhắn.</p>
+            </div>
+          }
+        </div>
+      </div>
+    } @else if (activeTab() === 'bookings') {
+      <div class="space-y-6 animate-fade-in">
+        <div class="flex justify-between items-center select-none mb-2">
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">Đặt chỗ của tôi</h3>
+          <button 
+            type="button"
+            (click)="loadBookings()"
+            class="text-xs font-bold text-cyan-650 hover:underline flex items-center gap-1 focus:outline-none"
+          >
+            🔄 Làm mới
+          </button>
+        </div>
+
+        @if (isLoadingBookings()) {
+          <div class="rounded-3xl border border-slate-200/60 bg-white p-16 text-center shadow-sm">
+            <div class="h-10 w-10 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent mx-auto mb-4"></div>
+            <p class="text-slate-400 text-xs font-bold">Đang tải danh sách đặt chỗ của bạn...</p>
+          </div>
+        } @else if (bookings().length === 0) {
+          <div class="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-sm max-w-md mx-auto">
+            <svg class="w-16 h-16 text-cyan-450 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h4 class="text-sm font-black text-slate-800 mb-2">Chưa có lượt đặt chỗ nào</h4>
+            <p class="text-xs text-slate-500 leading-relaxed mb-6">
+              Bạn có thể đặt bàn nhà hàng, phòng khách sạn hoặc vé tham quan trực tiếp ngay trên chi tiết các địa điểm du lịch của Travel Hub.
+            </p>
+            <button 
+              routerLink="/travelers-choice"
+              class="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-6 py-3 transition active:scale-95 shadow"
+            >
+              Khám phá địa điểm du lịch
+            </button>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            @for (b of bookings(); track b.id) {
+              <div class="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm flex flex-col justify-between">
+                <div class="p-6 space-y-4">
+                  <!-- Place header -->
+                  <div class="flex items-center gap-3 pb-3.5 border-b border-slate-100">
+                    <div class="h-11 w-11 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0">
+                      <img [src]="b.place?.images?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=150&q=80'" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="text-sm font-black text-slate-850 truncate">{{ b.place?.name }}</h4>
+                      <p class="text-[10px] text-slate-400 font-semibold truncate mt-0.5">{{ b.place?.address }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Booking metadata -->
+                  <div class="grid grid-cols-2 gap-y-3.5 gap-x-2 text-[11px] font-bold text-slate-500">
+                    <div>
+                      <span class="text-[9px] text-slate-400 block uppercase tracking-wider mb-0.5">Thời gian đến:</span>
+                      <span class="text-slate-800">{{ b.checkIn | date:'dd/MM/yyyy HH:mm' }}</span>
+                    </div>
+                    <div *ngIf="b.checkOut">
+                      <span class="text-[9px] text-slate-400 block uppercase tracking-wider mb-0.5">Ngày Check-out:</span>
+                      <span class="text-slate-800">{{ b.checkOut | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div>
+                      <span class="text-[9px] text-slate-400 block uppercase tracking-wider mb-0.5">Số lượng khách:</span>
+                      <span class="text-slate-800">{{ b.guestsCount }} người</span>
+                    </div>
+                    <div>
+                      <span class="text-[9px] text-slate-400 block uppercase tracking-wider mb-0.5">Trạng thái:</span>
+                      <span 
+                        [ngClass]="{
+                          'bg-amber-100 text-amber-800 border-amber-300': b.status === 'PENDING',
+                          'bg-emerald-100 text-emerald-800 border-emerald-300': b.status === 'CONFIRMED',
+                          'bg-indigo-100 text-indigo-800 border-indigo-300': b.status === 'COMPLETED',
+                          'bg-rose-100 text-rose-800 border-rose-300': b.status === 'CANCELLED'
+                        }"
+                        class="inline-block px-2 py-0.5 rounded-lg text-[9px] font-black border uppercase tracking-wider"
+                      >
+                        {{ b.status === 'PENDING' ? 'Chờ duyệt' : b.status === 'CONFIRMED' ? 'Đã duyệt' : b.status === 'COMPLETED' ? 'Đã hoàn thành' : 'Đã hủy' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Special requests -->
+                  <div *ngIf="b.specialRequests" class="bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-[10px] text-slate-500 font-semibold italic">
+                    "{{ b.specialRequests }}"
+                  </div>
+                </div>
+
+                <!-- Actions footer -->
+                <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
+                  <span class="text-[10px] font-bold text-slate-400 select-none">Mã đặt chỗ: {{ b.id.substring(0, 8).toUpperCase() }}</span>
+                  <button 
+                    type="button"
+                    *ngIf="b.status === 'PENDING' || b.status === 'CONFIRMED'"
+                    (click)="cancelUserBooking(b.id)"
+                    class="rounded-xl border border-rose-200 bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs px-4 py-2 transition active:scale-95"
+                  >
+                    Hủy đặt chỗ
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    } @else if (activeTab() === 'account') {
+      <div class="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-sm max-w-2xl mx-auto animate-fade-in">
+        <h3 class="text-lg font-black text-slate-900 mb-2 tracking-tight">Cài đặt tài khoản bảo mật</h3>
+        <p class="text-xs text-slate-400 font-semibold mb-6">Thay đổi email đăng nhập hoặc cập nhật mật khẩu tài khoản của bạn.</p>
+        
+        <form class="space-y-5" [formGroup]="accountForm" (ngSubmit)="saveAccountSettings()">
+          <!-- Email Field -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-600">Email đăng nhập</label>
+            <input 
+              type="email" 
+              formControlName="email"
+              class="glow-input w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-semibold"
+              placeholder="Nhập địa chỉ email mới..."
+            />
+            <p *ngIf="accountForm.get('email')?.touched && accountForm.get('email')?.errors?.['email']" class="text-[10px] text-rose-500 font-bold">Vui lòng nhập đúng địa chỉ email.</p>
+          </div>
+
+          <div class="border-t border-slate-100 pt-5 mt-5">
+            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Thay đổi mật khẩu</h4>
+            
+            <div class="space-y-4">
+              <!-- Current Password -->
+              <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-600">Mật khẩu hiện tại</label>
+                <input 
+                  type="password" 
+                  formControlName="currentPassword"
+                  class="glow-input w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-semibold"
+                  placeholder="Nhập mật khẩu hiện tại..."
+                />
+              </div>
+
+              <!-- New Password -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label class="text-xs font-bold text-slate-600">Mật khẩu mới</label>
+                  <input 
+                    type="password" 
+                    formControlName="newPassword"
+                    class="glow-input w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-semibold"
+                    placeholder="Mật khẩu mới..."
+                  />
+                </div>
+                <div class="space-y-1">
+                  <label class="text-xs font-bold text-slate-600">Xác nhận mật khẩu mới</label>
+                  <input 
+                    type="password" 
+                    formControlName="confirmPassword"
+                    class="glow-input w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-900 shadow-inner outline-none focus:border-cyan-300 focus:bg-white font-semibold"
+                    placeholder="Nhập lại mật khẩu mới..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feedback messages -->
+          @if (accountSuccessMessage()) {
+            <p class="text-xs text-emerald-600 font-bold">{{ accountSuccessMessage() }}</p>
+          }
+          @if (accountErrorMessage()) {
+            <p class="text-xs text-rose-600 font-bold">{{ accountErrorMessage() }}</p>
+          }
+
+          <!-- Submit Button -->
+          <div class="flex justify-end gap-4 pt-4 border-t border-slate-100">
+            <button 
+              type="submit" 
+              [disabled]="isSavingAccount()"
+              class="rounded-2xl bg-slate-900 hover:bg-slate-800 px-8 py-3.5 font-bold text-white shadow-md transition disabled:opacity-50 text-xs"
+            >
+              {{ isSavingAccount() ? 'Đang cập nhật...' : 'Cập nhật tài khoản' }}
             </button>
           </div>
         </form>

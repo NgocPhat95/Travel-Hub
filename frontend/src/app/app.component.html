@@ -64,22 +64,57 @@
       <!-- Right: Navigation Links & Auth -->
       <div class="flex items-center gap-6">
         <div class="hidden lg:flex items-center gap-6">
-          <a routerLink="/places" class="text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans">
-            Danh mục
+          <!-- Khám Phá Dropdown -->
+          <div class="relative" (mouseenter)="showExploreDropdown.set(true)" (mouseleave)="showExploreDropdown.set(false)">
+            <button class="nav-link flex items-center gap-1 text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans cursor-pointer select-none bg-transparent border-none">
+              Khám Phá
+              <svg class="w-3 h-3 text-slate-400 transition-transform" [class.rotate-180]="showExploreDropdown()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
+            @if (showExploreDropdown()) {
+              <div class="absolute left-0 top-full mt-1 w-60 bg-white border border-slate-100 rounded-2xl shadow-2xl py-2 z-50 animate-fade-in">
+                <a
+                  routerLink="/travelers-choice"
+                  (click)="showExploreDropdown.set(false)"
+                  class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition group"
+                >
+                  <span class="text-2xl mt-0.5">🏆</span>
+                  <div>
+                    <p class="text-sm font-bold text-slate-800 group-hover:text-amber-600 transition">Lựa Chọn Du Khách</p>
+                    <p class="text-xs text-slate-400">Địa điểm được đánh giá cao nhất</p>
+                  </div>
+                </a>
+                <a
+                  routerLink="/travel-guides"
+                  (click)="showExploreDropdown.set(false)"
+                  class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition group"
+                >
+                  <span class="text-2xl mt-0.5">📰</span>
+                  <div>
+                    <p class="text-sm font-bold text-slate-800 group-hover:text-cyan-600 transition">Cẩm Nang Du Lịch</p>
+                    <p class="text-xs text-slate-400">Hướng dẫn & mẹo du lịch</p>
+                  </div>
+                </a>
+              </div>
+            }
+          </div>
+          <a routerLink="/tickets-tours" class="nav-link text-sm font-bold text-slate-600 hover:text-indigo-600 transition font-sans flex items-center gap-1">
+            Vé &amp; Tour
           </a>
-          <a routerLink="/map-search" class="text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans">
+          <a routerLink="/map-search" class="nav-link text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans">
             Bản đồ du lịch
           </a>
-          <a routerLink="/feed" class="text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans">
+          <a routerLink="/feed" class="nav-link text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans">
             Bảng tin (Social)
           </a>
-          <a (click)="openQuickReviewSearch()" class="text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans flex items-center gap-1.5 cursor-pointer select-none">
+          <a (click)="openQuickReviewSearch()" class="nav-link text-sm font-bold text-slate-600 hover:text-cyan-600 transition font-sans flex items-center gap-1.5 cursor-pointer select-none">
             <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
             </svg>
             Viết đánh giá
           </a>
-          <a routerLink="/ai-planner" class="text-sm font-bold text-cyan-600 hover:text-indigo-600 transition font-sans flex items-center gap-1.5">
+          <a routerLink="/ai-planner" class="nav-link text-sm font-bold text-cyan-600 hover:text-indigo-600 transition font-sans flex items-center gap-1.5">
             <span class="relative flex h-2 w-2">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
@@ -87,7 +122,7 @@
             AI Planner
           </a>
           @if (user()?.role === 'SUPER_ADMIN') {
-            <a routerLink="/admin" class="text-sm font-black text-rose-600 hover:text-rose-700 transition font-sans">
+            <a routerLink="/admin" class="nav-link text-sm font-black text-rose-600 hover:text-rose-700 transition font-sans">
               Admin Panel
             </a>
           }
@@ -96,34 +131,81 @@
         <!-- Auth state -->
         @if (isAuthenticated() && user()) {
           <div class="flex items-center gap-4">
-            <!-- Test link for Public Profile (using self ID as a test) -->
-            <a [routerLink]="['/public-profile', user()?.id]" class="text-xs text-slate-500 hover:text-cyan-600 transition font-medium">
-              Xem hồ sơ công khai của tôi
-            </a>
 
-            <!-- Avatar -->
-            <a routerLink="/profile" class="flex items-center gap-2 group">
-              <div class="h-9 w-9 overflow-hidden rounded-full border border-slate-200 shadow-sm transition group-hover:scale-105">
-                @if (user()?.avatarUrl) {
-                  <img [src]="user()?.avatarUrl!" alt="Avatar" class="h-full w-full object-cover">
-                } @else {
-                  <div class="flex h-full w-full items-center justify-center bg-slate-200 text-sm font-bold text-slate-600">
-                    {{ user()?.fullName?.charAt(0) || 'U' }}
-                  </div>
-                }
-              </div>
-              <span class="text-sm font-semibold text-slate-700 group-hover:text-slate-950 transition">
-                {{ user()?.fullName }}
-              </span>
-            </a>
+            <!-- Avatar Dropdown Trigger -->
+            <div class="relative">
+              <button 
+                type="button" 
+                (click)="toggleProfileDropdown($event)"
+                class="flex items-center gap-2 group focus:outline-none select-none"
+              >
+                <div class="h-9 w-9 overflow-hidden rounded-full border border-slate-200 shadow-sm transition group-hover:scale-105">
+                  @if (user()?.avatarUrl) {
+                    <img [src]="user()?.avatarUrl!" alt="Avatar" class="h-full w-full object-cover">
+                  } @else {
+                    <div class="flex h-full w-full items-center justify-center bg-slate-200 text-sm font-bold text-slate-600">
+                      {{ user()?.fullName?.charAt(0) || 'U' }}
+                    </div>
+                  }
+                </div>
+                <span class="text-sm font-semibold text-slate-700 group-hover:text-slate-950 transition">
+                  {{ user()?.fullName }}
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
 
-            <!-- Logout -->
-            <button
-              (click)="logout()"
-              class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 shadow-sm transition"
-            >
-              Đăng xuất
-            </button>
+              <!-- Profile Dropdown Overlay (TripAdvisor style) -->
+              @if (showProfileDropdown()) {
+                <div class="absolute right-0 mt-2 w-48 rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50 text-left font-sans animate-fade-in">
+                  <a 
+                    routerLink="/trips" 
+                    (click)="showProfileDropdown.set(false)"
+                    class="block px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-cyan-600 transition flex items-center gap-2"
+                  >
+                    ✈️ Chuyến đi
+                  </a>
+                  <a 
+                    routerLink="/profile" 
+                    (click)="showProfileDropdown.set(false)"
+                    class="block px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-cyan-600 transition flex items-center gap-2 border-t border-slate-100"
+                  >
+                    👤 Hồ sơ
+                  </a>
+                  <a 
+                    routerLink="/profile" 
+                    [queryParams]="{ tab: 'messages' }"
+                    (click)="showProfileDropdown.set(false)"
+                    class="block px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-cyan-600 transition flex items-center gap-2 border-t border-slate-100"
+                  >
+                    💬 Tin nhắn
+                  </a>
+                  <a 
+                    routerLink="/profile" 
+                    [queryParams]="{ tab: 'bookings' }"
+                    (click)="showProfileDropdown.set(false)"
+                    class="block px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-cyan-600 transition flex items-center gap-2 border-t border-slate-100"
+                  >
+                    📅 Đặt chỗ
+                  </a>
+                  <a 
+                    routerLink="/profile" 
+                    [queryParams]="{ tab: 'account' }"
+                    (click)="showProfileDropdown.set(false)"
+                    class="block px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-cyan-600 transition flex items-center gap-2 border-t border-slate-100"
+                  >
+                    ⚙️ Tài khoản
+                  </a>
+                  <button 
+                    (click)="logout(); showProfileDropdown.set(false)"
+                    class="w-full text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition border-t border-slate-100 flex items-center gap-2"
+                  >
+                    🚪 Đăng xuất
+                  </button>
+                </div>
+              }
+            </div>
           </div>
         } @else {
           <button
@@ -167,6 +249,120 @@
   <main class="flex-1 w-full bg-slate-50 relative">
     <router-outlet></router-outlet>
   </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="bg-white border-t border-slate-200/80 font-sans text-slate-600 mt-auto">
+    <!-- Top Footer: Brand, Links, Newsletter -->
+    <div class="mx-auto max-w-7xl px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+      
+      <!-- Column 1: Brand & Socials -->
+      <div class="lg:col-span-2 space-y-6">
+        <a routerLink="/" class="text-2xl font-black tracking-tighter text-slate-900 hover:opacity-90 flex-shrink-0">
+          Travel<span class="text-cyan-500 font-extrabold">Hub</span>
+        </a>
+        <p class="text-sm text-slate-500 max-w-sm leading-relaxed">
+          Nền tảng chia sẻ cẩm nang du lịch, đánh giá địa điểm, hỗ trợ đặt phòng khách sạn, nhà hàng và lập kế hoạch hành trình thông minh với trợ lý AI.
+        </p>
+        <!-- Social Icons with nice micro-animations -->
+        <div class="flex items-center gap-4">
+          <a href="#" class="social-icon group" aria-label="Facebook">
+            <svg class="w-5 h-5 transition-transform group-hover:scale-110 text-slate-400 group-hover:text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon group" aria-label="Instagram">
+            <svg class="w-5 h-5 transition-transform group-hover:scale-110 text-slate-400 group-hover:text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon group" aria-label="Youtube">
+            <svg class="w-5 h-5 transition-transform group-hover:scale-110 text-slate-400 group-hover:text-red-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M23.498 6.163a3.003 3.003 0 00-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 00-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 002.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 002.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Column 2: Khám Phá -->
+      <div class="space-y-4">
+        <h4 class="text-sm font-black text-slate-800 tracking-wider uppercase">Khám phá</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li>
+            <a routerLink="/travelers-choice" class="hover:text-cyan-600 transition duration-200 flex items-center gap-1.5">
+              🏆 Lựa chọn du khách
+            </a>
+          </li>
+          <li>
+            <a routerLink="/travel-guides" class="hover:text-cyan-600 transition duration-200 flex items-center gap-1.5">
+              📰 Cẩm nang du lịch
+            </a>
+          </li>
+          <li>
+            <a routerLink="/tickets-tours" class="hover:text-cyan-600 transition duration-200 flex items-center gap-1.5">
+              🎫 Vé &amp; Tour du lịch
+            </a>
+          </li>
+          <li>
+            <a routerLink="/map-search" class="hover:text-cyan-600 transition duration-200 flex items-center gap-1.5">
+              🗺️ Bản đồ du lịch
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Column 3: Hỗ trợ & Hướng dẫn -->
+      <div class="space-y-4">
+        <h4 class="text-sm font-black text-slate-800 tracking-wider uppercase">Hỗ trợ &amp; Liên hệ</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#" class="hover:text-cyan-600 transition duration-200">Trung tâm trợ giúp / FAQ</a></li>
+          <li><a href="#" class="hover:text-cyan-600 transition duration-200">Hướng dẫn đặt phòng</a></li>
+          <li><a href="#" class="hover:text-cyan-600 transition duration-200">Chính sách bảo mật đặt vé</a></li>
+          <li><a href="#" class="hover:text-cyan-600 transition duration-200">Liên hệ hỗ trợ 24/7</a></li>
+          <li><a href="#" class="hover:text-cyan-600 transition duration-200">Chương trình đối tác</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 4: Newsletter -->
+      <div class="space-y-4">
+        <h4 class="text-sm font-black text-slate-800 tracking-wider uppercase">Nhận cẩm nang du lịch</h4>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Đăng ký để nhận các ưu đãi khách sạn mới nhất và những mẹo du lịch hữu ích hàng tuần.
+        </p>
+        <form class="space-y-2">
+          <div class="relative flex items-center bg-slate-50 rounded-2xl border border-slate-200 px-3.5 py-2.5 focus-within:bg-white focus-within:border-[#00aa6c] transition duration-200">
+            <input
+              type="email"
+              placeholder="Email của bạn..."
+              class="w-full bg-transparent border-none outline-none text-slate-800 text-xs font-semibold placeholder-slate-400"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full rounded-2xl bg-gradient-to-r from-[#00aa6c] to-[#008a54] py-2.5 text-xs font-bold text-white shadow-md shadow-green-100 transition hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          >
+            Đăng ký ngay
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Bottom Footer: Legal & Status -->
+    <div class="border-t border-slate-200/80 bg-slate-50/50">
+      <div class="mx-auto max-w-7xl px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-medium">
+        <p>© 2026 Travel Hub. Tất cả các quyền được bảo lưu.</p>
+        <div class="flex items-center gap-6">
+          <a href="#" class="hover:text-slate-600 transition">Điều khoản sử dụng</a>
+          <a href="#" class="hover:text-slate-600 transition">Chính sách bảo mật</a>
+          <a href="#" class="hover:text-slate-600 transition">Cài đặt cookies</a>
+        </div>
+        <div class="flex items-center gap-1.5 text-[#00aa6c] bg-green-50 px-3 py-1 rounded-full border border-green-100 flex-shrink-0">
+          <span class="w-1.5 h-1.5 bg-[#00aa6c] rounded-full animate-pulse"></span>
+          <span>Hệ thống hoạt động ổn định</span>
+        </div>
+      </div>
+    </div>
+  </footer>
   
   <!-- Floating AI Chatbot Concierge -->
   <app-ai-concierge></app-ai-concierge>
