@@ -26,38 +26,22 @@ export class BookingComRapidService {
   }
 
   /**
-   * Search dest_id for a city name dynamically trying multiple endpoints
+   * Search dest_id for a city name dynamically using searchDestination
    */
   async searchLocationId(query: string): Promise<string | null> {
     if (!this.rapidApiKey) return null;
     try {
-      // Endpoint 1: hotels/locations
       const response = await firstValueFrom(
-        this.httpService.get(`${this.baseUrl}/api/v1/hotels/locations`, {
+        this.httpService.get(`${this.baseUrl}/api/v1/hotels/searchDestination`, {
           headers: this.headers,
           params: { query, languagecode: 'vi' },
         }),
       );
       const data = response.data?.data || response.data || [];
-      const cityResult = data.find((item: any) => item.dest_type === 'city') || data[0];
+      const cityResult = data.find((item: any) => item.search_type === 'city' || item.dest_type === 'city') || data[0];
       if (cityResult?.dest_id) return String(cityResult.dest_id);
     } catch (err: any) {
-      this.logger.warn(`[BookingCom] /hotels/locations failed for ${query}: ${err.message}`);
-    }
-
-    try {
-      // Endpoint 2: meta/getLocations
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.baseUrl}/api/v1/meta/getLocations`, {
-          headers: this.headers,
-          params: { query, languagecode: 'vi' },
-        }),
-      );
-      const data = response.data?.data || response.data || [];
-      const cityResult = data.find((item: any) => item.dest_type === 'city') || data[0];
-      if (cityResult?.dest_id) return String(cityResult.dest_id);
-    } catch (err: any) {
-      this.logger.warn(`[BookingCom] /meta/getLocations failed for ${query}: ${err.message}`);
+      this.logger.warn(`[BookingCom] /hotels/searchDestination failed for ${query}: ${err.message}`);
     }
 
     return null;
@@ -181,7 +165,7 @@ export class BookingComRapidService {
       const hotels = await this.searchHotels(destId, item.name, 1);
       
       // Normalize hotel data
-      for (const h of hotels.slice(0, 15)) { // max 15 per city
+      for (const h of hotels.slice(0, 50)) { // max 50 per city
         const property = h.property || h;
         if (!property?.name) continue;
 

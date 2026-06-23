@@ -103,13 +103,36 @@ export class MapSearchComponent implements OnInit, AfterViewInit {
     // Zoom buttons in bottom right
     this.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-    // Map tiles layer (OpenStreetMap Standard tile set)
-    this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
+    // Map tiles layer (Google Maps with Vietnamese labels)
+    this.L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      attribution: '&copy; Google Maps',
     }).addTo(this.map);
 
     // Markers layer
     this.markersLayer = this.L.layerGroup().addTo(this.map);
+
+    // Add permanent sovereignty labels for Hoàng Sa and Trường Sa (Vietnam)
+    const hoangSaIcon = this.L.divIcon({
+      html: `<div style="text-align: center; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 800; color: #1e293b; background: rgba(255,255,255,0.95); border: 1.5px solid #cbd5e1; padding: 4px 8px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); white-space: nowrap; pointer-events: none;">
+               🇻🇳 Quần đảo Hoàng Sa <span style="color: #ef4444; font-weight: 900;">(Việt Nam)</span>
+             </div>`,
+      className: 'sovereignty-label-hoang-sa',
+      iconSize: [180, 28],
+      iconAnchor: [90, 14],
+    });
+
+    const truongSaIcon = this.L.divIcon({
+      html: `<div style="text-align: center; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 800; color: #1e293b; background: rgba(255,255,255,0.95); border: 1.5px solid #cbd5e1; padding: 4px 8px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); white-space: nowrap; pointer-events: none;">
+               🇻🇳 Quần đảo Trường Sa <span style="color: #ef4444; font-weight: 900;">(Việt Nam)</span>
+             </div>`,
+      className: 'sovereignty-label-truong-sa',
+      iconSize: [180, 28],
+      iconAnchor: [90, 14],
+    });
+
+    this.L.marker([16.5, 112.0], { icon: hoangSaIcon, interactive: false }).addTo(this.map);
+    this.L.marker([8.63, 111.9], { icon: truongSaIcon, interactive: false }).addTo(this.map);
 
     // Map drag/zoom end listener to automatically fetch places inside view bounding box
     this.map.on('moveend', () => {

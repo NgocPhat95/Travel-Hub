@@ -25,3 +25,8 @@
     transform: scale(1.15);
   }
 }
+
+::ng-deep .leaflet-routing-container {
+  display: none !important;
+}
+

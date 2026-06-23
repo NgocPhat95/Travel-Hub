@@ -370,4 +370,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  focusPlace(place: any, routeMap: any) {
+    const lat = place.latitude ?? place.location?.lat;
+    const lon = place.longitude ?? place.location?.lon;
+    if (lat !== undefined && lon !== undefined && routeMap) {
+      routeMap.focusOnLocation(lat, lon);
+    }
+  }
 }

@@ -76,7 +76,7 @@ export class TripAdvisorRapidService {
 
       const hotels = res.data?.data?.data || res.data?.data || [];
       this.logger.log(`[TripAdvisor] Hotels in ${city}: ${hotels.length}`);
-      return hotels.slice(0, 15).map((h: any) => this.normalizeHotel(h, city));
+      return hotels.slice(0, 40).map((h: any) => this.normalizeHotel(h, city));
     } catch (err: any) {
       this.logger.error(`[TripAdvisor] Hotel search failed for ${city}: ${err.message}`);
       return [];
@@ -108,7 +108,7 @@ export class TripAdvisorRapidService {
       );
       const list = res.data?.data?.data || [];
       this.logger.log(`[TripAdvisor] Restaurants in ${city}: ${list.length}`);
-      return list.slice(0, 15).map((r: any) => this.normalizeRestaurant(r, city));
+      return list.slice(0, 40).map((r: any) => this.normalizeRestaurant(r, city));
     } catch (err: any) {
       this.logger.error(`[TripAdvisor] Restaurant search failed for ${city}: ${err.message}`);
       return [];
@@ -140,7 +140,7 @@ export class TripAdvisorRapidService {
       );
       const list = res.data?.data?.data || [];
       this.logger.log(`[TripAdvisor] Attractions in ${city}: ${list.length}`);
-      return list.slice(0, 10).map((a: any) => this.normalizeAttraction(a, city));
+      return list.slice(0, 30).map((a: any) => this.normalizeAttraction(a, city));
     } catch (err: any) {
       this.logger.error(`[TripAdvisor] Attraction search failed for ${city}: ${err.message}`);
       return [];

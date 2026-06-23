@@ -284,7 +284,8 @@
                     cdkDrag
                     (cdkDragStarted)="onDragStarted(item.id)"
                     [cdkDragData]="item"
-                    class="itinerary-card bg-white border border-slate-200/60 hover:border-indigo-200 p-4 rounded-[1.5rem] cursor-grab active:cursor-grabbing transition duration-300 relative shadow-sm hover:shadow-md"
+                    (click)="focusPlace(item.place, routeMap)"
+                    class="itinerary-card cursor-pointer bg-white border border-slate-200/60 hover:border-indigo-200 p-4 rounded-[1.5rem] transition duration-300 relative shadow-sm hover:shadow-md"
                   >
                     <!-- Drag Indicator & Index numbering -->
                     <div class="flex justify-between items-start gap-4 mb-3">
@@ -302,8 +303,8 @@
 
                       <!-- Delete button -->
                       <button 
-                        (click)="deleteItem(item.id, activeDay())"
-                        class="text-slate-350 hover:text-rose-500 transition focus:outline-none"
+                        (click)="deleteItem(item.id, activeDay()); $event.stopPropagation()"
+                        class="text-slate-355 hover:text-rose-500 transition focus:outline-none relative z-10"
                         title="Xóa địa điểm khỏi ngày này"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -360,6 +361,7 @@
         <!-- Neon Route Map Component -->
         <div class="flex-grow rounded-3xl overflow-hidden border border-slate-200/60 shadow-inner">
           <app-trip-route-map 
+            #routeMap
             [items]="dayItems()[activeDay()] || []" 
             [dayNumber]="activeDay()"
           ></app-trip-route-map>

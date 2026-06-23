@@ -40,6 +40,18 @@ export class SyncController {
     return this.syncService.getStatus();
   }
 
+  @Get('force')
+  async forceSync() {
+    this.syncService.runFullSync().catch((e) =>
+      console.error('[SyncController] Force Sync error:', e.message),
+    );
+    return {
+      message: '🚀 Đã kích hoạt cưỡng bức đồng bộ dữ liệu du lịch Việt Nam!',
+      status: 'STARTED',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   @Get('check-booking')
   async checkBooking() {
     const key = process.env.RAPIDAPI_KEY || '';
@@ -54,7 +66,7 @@ export class SyncController {
     }
 
     try {
-      const url = `https://${host}/api/v1/hotels/locations`;
+      const url = `https://${host}/api/v1/hotels/searchDestination`;
       const res = await this.syncService.bookingComService['httpService'].axiosRef.get(url, {
         headers: {
           'X-RapidAPI-Key': key,
@@ -62,10 +74,10 @@ export class SyncController {
         },
         params: { query: 'Sapa', languagecode: 'vi' }
       });
-      results.push({ test: 'raw locations', status: res.status, data: res.data });
+      results.push({ test: 'raw searchDestination', status: res.status, data: res.data });
     } catch (e: any) {
       results.push({ 
-        test: 'raw locations', 
+        test: 'raw searchDestination', 
         error: e.message, 
         status: e.response?.status, 
         data: e.response?.data 

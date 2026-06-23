@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import * as fs from 'fs';
+import * as path from 'path';
 import { PrismaService } from '../prisma/prisma.service';
 import { SearchService } from '../search/search.service';
 import { VietnamDataService } from './providers/vietnam-data.service';
@@ -72,27 +74,63 @@ export class DataSyncService {
       // 1. Khách sạn Việt Nam (Lấy từ Booking.com API)
       const hotels = await this.syncSource(
         '🏨 Vietnam Hotels',
-        () => hasApiKey
-          ? this.bookingComService.fetchAllVietnamHotels()
-          : Promise.resolve(this.vietnamDataService.getHotels()),
+        async () => {
+          let items: any[] = [];
+          if (hasApiKey) {
+            try {
+              items = await this.bookingComService.fetchAllVietnamHotels();
+            } catch (e: any) {
+              this.logger.error(`Booking.com API failed: ${e.message}`);
+            }
+          }
+          if (!items || items.length === 0) {
+            this.logger.log('[DataSync] Falling back to local hotels dataset.');
+            items = this.vietnamDataService.getHotels();
+          }
+          return items;
+        },
       );
       this.lastResults.push(hotels);
 
       // 2. Nhà hàng Việt Nam
       const restaurants = await this.syncSource(
         '🍜 Vietnam Restaurants',
-        () => hasApiKey
-          ? this.tripAdvisorService.fetchAllVietnamRestaurants()
-          : Promise.resolve(this.vietnamDataService.getRestaurants()),
+        async () => {
+          let items: any[] = [];
+          if (hasApiKey) {
+            try {
+              items = await this.tripAdvisorService.fetchAllVietnamRestaurants();
+            } catch (e: any) {
+              this.logger.error(`TripAdvisor restaurants API failed: ${e.message}`);
+            }
+          }
+          if (!items || items.length === 0) {
+            this.logger.log('[DataSync] Falling back to local restaurants dataset.');
+            items = this.vietnamDataService.getRestaurants();
+          }
+          return items;
+        },
       );
       this.lastResults.push(restaurants);
 
       // 3. Điểm tham quan & Tour
       const attractions = await this.syncSource(
         '🗺️ Vietnam Attractions & Tours',
-        () => hasApiKey
-          ? this.tripAdvisorService.fetchAllVietnamAttractions()
-          : Promise.resolve(this.vietnamDataService.getAttractions()),
+        async () => {
+          let items: any[] = [];
+          if (hasApiKey) {
+            try {
+              items = await this.tripAdvisorService.fetchAllVietnamAttractions();
+            } catch (e: any) {
+              this.logger.error(`TripAdvisor attractions API failed: ${e.message}`);
+            }
+          }
+          if (!items || items.length === 0) {
+            this.logger.log('[DataSync] Falling back to local attractions dataset.');
+            items = this.vietnamDataService.getAttractions();
+          }
+          return items;
+        },
       );
       this.lastResults.push(attractions);
 
@@ -102,6 +140,28 @@ export class DataSyncService {
         () => Promise.resolve(this.vietnamDataService.getFlights()),
       );
       this.lastResults.push(flights);
+
+      // 5. Nạp dữ liệu Booking.com Premium Feed (Có nhiều nhà hàng, khách sạn, tour du lịch chất lượng cao)
+      const bookingFeed = await this.syncSource(
+        '📦 Booking.com Premium Feed',
+        () => {
+          try {
+            const feedPath = path.join(process.cwd(), 'booking_partner_feed.json');
+            if (fs.existsSync(feedPath)) {
+              const content = fs.readFileSync(feedPath, 'utf8');
+              const items = JSON.parse(content);
+              return Promise.resolve(items.map((it: any) => ({
+                ...it,
+                partnerName: 'BOOKING_COM',
+              })));
+            }
+          } catch (e: any) {
+            this.logger.error(`Failed to load booking_partner_feed.json: ${e.message}`);
+          }
+          return Promise.resolve([]);
+        }
+      );
+      this.lastResults.push(bookingFeed);
 
       this.lastSyncAt = new Date();
       this.totalSynced = this.lastResults.reduce((s, r) => s + r.newItems + r.updatedItems, 0);
