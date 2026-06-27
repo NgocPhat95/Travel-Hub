@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { AdminService } from './admin.service';
@@ -11,6 +11,60 @@ export class AdminController {
   @Get('dashboard/stats')
   getDashboardStats() {
     return this.adminService.getDashboardStats();
+  }
+
+  // ======================= QUẢN LÝ NGƯỜI DÙNG =======================
+
+  @Get('users')
+  getAllUsers(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.adminService.getAllUsers(pageNum, limitNum, search, status);
+  }
+
+  @Get('users/:id')
+  getUserDetail(@Param('id') id: string) {
+    return this.adminService.getUserDetail(id);
+  }
+
+  @Post('users/:id/warning')
+  sendWarning(
+    @Param('id') id: string,
+    @Body() body: { message: string; severity?: 'LOW' | 'MEDIUM' | 'HIGH' },
+  ) {
+    return this.adminService.sendWarning(id, body.message, body.severity || 'LOW');
+  }
+
+  @Post('users/:id/unban')
+  unbanUser(@Param('id') id: string) {
+    return this.adminService.unbanUser(id);
+  }
+
+  @Delete('users/:id')
+  deleteUser(@Param('id') id: string) {
+    return this.adminService.deleteUser(id);
+  }
+
+  // ======================= THÔNG BÁO VI PHẠM & KIỂM DUYỆT =======================
+
+  @Get('moderation/violations')
+  getViolationNotifications() {
+    return this.adminService.getViolationNotifications();
+  }
+
+  @Delete('moderation/posts/:id')
+  deleteViolatingPost(@Param('id') id: string) {
+    return this.adminService.deleteViolatingPost(id);
+  }
+
+  @Delete('moderation/comments/:id')
+  deleteViolatingComment(@Param('id') id: string) {
+    return this.adminService.deleteViolatingComment(id);
   }
 
   // Manage Places CRUD

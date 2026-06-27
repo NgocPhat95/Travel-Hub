@@ -69,6 +69,7 @@ model User {
   bookings         Booking[]
   conversations    ConversationParticipant[]
   sentMessages     Message[]
+  adminWarnings    AdminWarning[]
 
   @@map("users")
 }
@@ -445,3 +446,15 @@ model Message {
 
   @@map("messages")
 }
+
+model AdminWarning {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String   @map("message")
+  severity  String   @map("severity") // "LOW", "MEDIUM", "HIGH"
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("admin_warnings")
+}
+

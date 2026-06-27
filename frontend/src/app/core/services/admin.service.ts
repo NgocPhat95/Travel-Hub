@@ -135,4 +135,41 @@ export class AdminService {
   banUser(userId: string): Observable<any> {
     return this.http.post<any>(`${this.apiBase}/moderation/users/${userId}/ban`, {});
   }
+
+  // ======================= QUẢN LÝ NGƯỜI DÙNG & VI PHẠM =======================
+
+  getAllUsers(page = 1, limit = 20, search = '', status = ''): Observable<any> {
+    let url = `${this.apiBase}/users?page=${page}&limit=${limit}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (status) url += `&status=${status}`;
+    return this.http.get<any>(url);
+  }
+
+  getUserDetail(userId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiBase}/users/${userId}`);
+  }
+
+  sendWarning(userId: string, message: string, severity: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW'): Observable<any> {
+    return this.http.post<any>(`${this.apiBase}/users/${userId}/warning`, { message, severity });
+  }
+
+  unbanUser(userId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiBase}/users/${userId}/unban`, {});
+  }
+
+  deleteUser(userId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiBase}/users/${userId}`);
+  }
+
+  getViolationNotifications(): Observable<any> {
+    return this.http.get<any>(`${this.apiBase}/moderation/violations`);
+  }
+
+  deleteViolatingPost(postId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiBase}/moderation/posts/${postId}`);
+  }
+
+  deleteViolatingComment(commentId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiBase}/moderation/comments/${commentId}`);
+  }
 }

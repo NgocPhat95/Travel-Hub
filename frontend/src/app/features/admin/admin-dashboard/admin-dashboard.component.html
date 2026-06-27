@@ -55,6 +55,15 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             Kiểm duyệt Đánh giá
           </button>
+
+          <button 
+            (click)="setTab('users')"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black transition-all active:scale-98"
+            [ngClass]="activeTab() === 'users' ? 'bg-indigo-50/50 border border-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 border border-transparent'"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            Quản lý Người dùng & Vi phạm
+          </button>
         </div>
       </div>
 
@@ -69,81 +78,87 @@
           </div>
 
           <div *ngIf="!isLoadingStats()" class="space-y-6">
-            <!-- 5 KPI Stats Cards in Grid Layout -->
+            <!-- Stats Cards in Grid Layout -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               
-              <!-- Card 1: Users -->
-              <div class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between">
+              <!-- Card 1: Users (Clickable to switch to users tab) -->
+              <div 
+                (click)="setTab('users')"
+                class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition duration-200"
+              >
                 <div>
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Tổng Thành Viên</span>
+                  <span class="text-[9px] font-black text-indigo-600 uppercase tracking-widest block mb-1">Tổng Thành Viên (Xem)</span>
                   <span class="text-2xl font-black text-slate-900 block">{{ usersCount() | number }}</span>
-                  <div class="flex items-center gap-1 mt-1 text-[9px] font-extrabold text-emerald-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    <span>+12.4% tháng này</span>
-                  </div>
                 </div>
                 <div class="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
               </div>
 
-              <!-- Card 2: Places -->
-              <div class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between">
+              <!-- Card 2: Places (Clickable to switch to places tab) -->
+              <div 
+                (click)="setTab('places')"
+                class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition duration-200"
+              >
                 <div>
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Địa Điểm Du Lịch</span>
+                  <span class="text-[9px] font-black text-cyan-600 uppercase tracking-widest block mb-1">Địa Điểm Du Lịch</span>
                   <span class="text-2xl font-black text-slate-900 block">{{ placesCount() | number }}</span>
-                  <div class="flex items-center gap-1 mt-1 text-[9px] font-extrabold text-emerald-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    <span>+8.2% tháng này</span>
-                  </div>
                 </div>
                 <div class="p-3 bg-cyan-50 rounded-2xl text-cyan-600">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 </div>
               </div>
 
-              <!-- Card 3: Reviews -->
-              <div class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between">
+              <!-- Card 3: Reviews (Clickable to switch to reviews moderation) -->
+              <div 
+                (click)="setTab('moderation')"
+                class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition duration-200"
+              >
                 <div>
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Tổng Số Đánh Giá</span>
+                  <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest block mb-1">Tổng Số Đánh Giá</span>
                   <span class="text-2xl font-black text-slate-900 block">{{ reviewsCount() | number }}</span>
-                  <div class="flex items-center gap-1 mt-1 text-[9px] font-extrabold text-emerald-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    <span>+15.1% tháng này</span>
-                  </div>
                 </div>
                 <div class="p-3 bg-amber-50 rounded-2xl text-amber-500">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
                 </div>
               </div>
 
-              <!-- Card 4: Pending Claims -->
-              <div class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between">
+              <!-- Card 4: Reports Count (Clickable to switch to users / violations) -->
+              <div 
+                (click)="setTab('users')"
+                class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition duration-200"
+              >
                 <div>
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Claims Chờ Duyệt</span>
-                  <span class="text-2xl font-black text-slate-900 block">{{ claimsCount() | number }}</span>
-                  <div class="flex items-center gap-1 mt-1 text-[9px] font-extrabold text-rose-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>
-                    <span>-4.5% tháng này</span>
-                  </div>
+                  <span class="text-[9px] font-black text-rose-500 uppercase tracking-widest block mb-1">Báo Cáo Vi Phạm</span>
+                  <span class="text-2xl font-black text-rose-600 block">{{ reportsCount() | number }}</span>
                 </div>
                 <div class="p-3 bg-rose-50 rounded-2xl text-rose-600">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 </div>
               </div>
 
-              <!-- Card 5: Estimated Revenue -->
-              <div class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between md:col-span-2 lg:col-span-1">
+              <!-- Card 5: Banned Users (Clickable to switch to users) -->
+              <div 
+                (click)="setTab('users')"
+                class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition duration-200"
+              >
                 <div>
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Doanh Thu Hệ Thống (VND)</span>
-                  <span class="text-2xl font-black text-indigo-750 block">{{ revenueCount() | number }}đ</span>
-                  <div class="flex items-center gap-1 mt-1 text-[9px] font-extrabold text-emerald-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    <span>+18.7% tháng này</span>
-                  </div>
+                  <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Tài Khoản Bị Khóa</span>
+                  <span class="text-2xl font-black text-slate-700 block">{{ bannedUsersCount() | number }}</span>
+                </div>
+                <div class="p-3 bg-slate-100 rounded-2xl text-slate-700">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                </div>
+              </div>
+
+              <!-- Card 6: Revenue -->
+              <div class="kpi-card bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between">
+                <div>
+                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Doanh Thu Đối Tác (VND)</span>
+                  <span class="text-2xl font-black text-indigo-900 block">{{ revenueCount() | number }}đ</span>
                 </div>
                 <div class="p-3 bg-emerald-50 rounded-2xl text-emerald-600">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m-10-8.998c0-.738.195-1.43.53-2.03a6.002 6.002 0 0110.74 0c.335.6.53 1.292.53 2.03a6.002 6.002 0 01-10.74 0c-.335-.6-.53-1.292-.53-2.03z"></path></svg>
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1"></path></svg>
                 </div>
               </div>
 
@@ -152,109 +167,90 @@
             <!-- Welcome Greeting Banner -->
             <div class="bg-white rounded-[2.5rem] border border-slate-200/80 p-8 shadow-sm">
               <h3 class="text-base font-black text-slate-800 mb-2">Chào mừng trở lại, Quản trị viên!</h3>
-              <p class="text-xs text-slate-500 font-semibold leading-relaxed">
-                Hệ thống TravelHub đang vận hành bình thường. Cơ sở dữ liệu và Elasticsearch đang được đồng bộ hóa thời gian thực.
-                Hãy sử dụng thanh menu bên trái để thực hiện kiểm duyệt nội dung bị báo cáo, CRUD địa điểm và phê duyệt đề xuất sửa đổi từ cộng đồng.
+              <p class="text-xs text-slate-500 font-semibold leading-relaxed mb-4">
+                Hệ thống TravelHub đang vận hành ổn định. Dữ liệu liên quan đến người dùng, bình luận và nội dung không phù hợp được theo dõi chặt chẽ tại đây.
               </p>
+              <div class="flex flex-wrap gap-2">
+                <button (click)="setTab('users')" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold transition shadow-sm active:scale-95">
+                  Quản lý Người dùng ngay
+                </button>
+                <button (click)="setTab('moderation')" class="px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 rounded-2xl text-xs font-bold transition active:scale-95">
+                  Xem Đánh giá bị báo cáo
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- TAB 2: PLACES CRUD -->
+        <!-- TAB 2: PLACES -->
         <div *ngIf="activeTab() === 'places'" class="space-y-6">
-          <div class="flex justify-between items-center">
-            <h3 class="text-base font-black text-slate-800 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-indigo-600">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205 3 1m1.5.5-1.5-.545m-9.75-2.682 3-1m0 0 3-1m-3 1-3-1m3 1v3c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-3m9 0h3.75m-3.75 3h.008v.008H12.75V15h.008v.008H12.75" />
-              </svg>
-              Quản lý Địa điểm Du Lịch ({{ places().length }})
-            </h3>
-            
+          <div class="flex justify-between items-center bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm">
+            <div>
+              <h3 class="text-base font-black text-slate-800">Quản lý Địa điểm du lịch</h3>
+              <p class="text-[10px] text-slate-400 font-bold">Danh sách tất cả các Khách sạn, Nhà hàng, và Điểm tham quan</p>
+            </div>
             <button 
-              (click)="openCreateModal()"
-              class="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 transition-all shadow active:scale-95 flex items-center gap-1.5"
+              (click)="openCreateModal()" 
+              class="bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-black px-5 py-3 rounded-2xl shadow-sm transition active:scale-95"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Thêm Địa Điểm Mới
+              + Thêm địa điểm mới
             </button>
           </div>
 
           <div *ngIf="isLoadingPlaces()" class="flex flex-col items-center py-20 bg-white rounded-[2.5rem] border border-slate-200/80">
             <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mb-3"></div>
-            <p class="text-xs font-bold text-slate-400">Đang tải danh mục địa điểm...</p>
+            <p class="text-xs font-bold text-slate-400">Đang tải danh sách địa điểm...</p>
           </div>
 
-          <!-- Places Grid/List -->
-          <div *ngIf="!isLoadingPlaces()" class="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm">
+          <div *ngIf="!isLoadingPlaces()" class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="bg-slate-50 border-b border-slate-150 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                    <th class="py-4 px-5">Địa điểm</th>
-                    <th class="py-4 px-5">Danh mục</th>
-                    <th class="py-4 px-5">Địa chỉ</th>
-                    <th class="py-4 px-5">Tọa độ</th>
-                    <th class="py-4 px-5 text-right">Hành động</th>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                    <th class="py-4 px-6">Tên địa điểm</th>
+                    <th class="py-4 px-6">Danh mục</th>
+                    <th class="py-4 px-6">Địa chỉ</th>
+                    <th class="py-4 px-6">Đánh giá</th>
+                    <th class="py-4 px-6">Hành động</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-xs">
-                  <tr *ngFor="let place of places()" class="hover:bg-slate-50/40 transition-colors">
-                    
-                    <td class="py-4 px-5 font-black text-slate-800">
+                <tbody class="divide-y divide-slate-100 text-xs font-semibold text-slate-600">
+                  <tr *ngFor="let place of places()" class="hover:bg-slate-50/50 transition">
+                    <td class="py-4 px-6">
                       <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex-shrink-0">
-                          <img *ngIf="place.avatarUrl" [src]="place.avatarUrl" class="w-full h-full object-cover" />
-                        </div>
-                        <div class="truncate max-w-[150px]">
-                          <span class="block truncate">{{ place.name }}</span>
-                          <span class="text-[9px] font-bold text-slate-400 block mt-0.5">ID: {{ place.id.slice(0, 8) }}...</span>
+                        <img [src]="place.avatarUrl || 'assets/default-place.jpg'" class="h-9 w-9 rounded-xl object-cover border border-slate-200" />
+                        <div>
+                          <span class="font-extrabold text-slate-900 block">{{ place.name }}</span>
+                          <span class="text-[10px] text-slate-400 font-bold block">{{ place.priceRange || 'N/A' }}</span>
                         </div>
                       </div>
                     </td>
-
-                    <td class="py-4 px-5">
-                      <span class="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider border"
-                            [ngClass]="{
-                              'bg-cyan-50 border-cyan-200 text-cyan-700': place.category === 'ATTRACTION',
-                              'bg-indigo-50 border-indigo-200 text-indigo-700': place.category === 'HOTEL',
-                              'bg-amber-50 border-amber-200 text-amber-700': place.category === 'RESTAURANT'
-                            }">
+                    <td class="py-4 px-6">
+                      <span 
+                        class="px-2.5 py-1 rounded-full text-[9px] font-extrabold tracking-wide"
+                        [ngClass]="{
+                          'bg-emerald-50 text-emerald-700': place.category === 'HOTEL',
+                          'bg-amber-50 text-amber-700': place.category === 'RESTAURANT',
+                          'bg-indigo-50 text-indigo-700': place.category === 'ATTRACTION'
+                        }"
+                      >
                         {{ place.category }}
                       </span>
                     </td>
-
-                    <td class="py-4 px-5 max-w-[180px] truncate text-slate-500 font-semibold">
-                      {{ place.address }}
+                    <td class="py-4 px-6 max-w-xs truncate">{{ place.address }}</td>
+                    <td class="py-4 px-6">
+                      <span class="font-extrabold text-slate-900">⭐ {{ place.avgRating || 0 }}</span>
                     </td>
-
-                    <td class="py-4 px-5 text-slate-400 font-bold text-[10px]">
-                      {{ place.latitude.toFixed(4) }}, {{ place.longitude.toFixed(4) }}
-                    </td>
-
-                    <td class="py-4 px-5 text-right">
-                      <div class="flex items-center justify-end gap-1.5">
-                        <button 
-                          (click)="openEditModal(place)"
-                          class="p-2 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.83 21.32a4.89 4.89 0 0 1-2.203 1.251l-3.208.751.75-3.208a4.89 4.89 0 0 1 1.251-2.203L16.862 4.487Zm0 0L19.5 7.125" />
-                          </svg>
+                    <td class="py-4 px-6">
+                      <div class="flex gap-2">
+                        <button (click)="openEditModal(place)" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition">
+                          Sửa
                         </button>
-                        
-                        <button 
-                          (click)="deletePlace(place.id)"
-                          class="p-2 rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 transition-all"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-1.8m0 0V4.5A1.875 1.875 0 0 0 16.586 2.63L15 4.5m0-1.812A1.875 1.875 0 0 0 13.414 2.63L12 4.5" />
-                          </svg>
+                        <button (click)="deletePlace(place.id)" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition">
+                          Xóa
                         </button>
                       </div>
                     </td>
-
                   </tr>
                 </tbody>
               </table>
@@ -262,80 +258,59 @@
           </div>
         </div>
 
-        <!-- TAB 3: EDIT SUGGESTIONS -->
+        <!-- TAB 3: SUGGESTIONS -->
         <div *ngIf="activeTab() === 'suggestions'" class="space-y-6">
-          <h3 class="text-base font-black text-slate-800 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-indigo-600">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-            </svg>
-            Phê duyệt Đề xuất Chỉnh sửa địa điểm ({{ suggestions().length }})
-          </h3>
+          <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm">
+            <h3 class="text-base font-black text-slate-800">Đề xuất Chỉnh sửa thông tin</h3>
+            <p class="text-[10px] text-slate-400 font-bold">Các sửa đổi địa điểm được đề xuất bởi thành viên cộng đồng</p>
+          </div>
 
           <div *ngIf="isLoadingSuggestions()" class="flex flex-col items-center py-20 bg-white rounded-[2.5rem] border border-slate-200/80">
             <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mb-3"></div>
-            <p class="text-xs font-bold text-slate-400">Đang tải danh sách đề xuất chỉnh sửa...</p>
+            <p class="text-xs font-bold text-slate-400">Đang tải danh sách đề xuất...</p>
           </div>
 
-          <div *ngIf="!isLoadingSuggestions() && suggestions().length === 0" class="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-sm">
-            <h4 class="text-xs font-black text-slate-700">Không có đề xuất mới</h4>
-            <p class="text-[10px] text-slate-400 mt-0.5 font-medium">Hiện không có yêu cầu đề xuất chỉnh sửa thông tin nào từ cộng đồng.</p>
+          <div *ngIf="!isLoadingSuggestions() && suggestions().length === 0" class="flex flex-col items-center justify-center py-20 bg-white rounded-[2.5rem] border border-slate-200/80 text-slate-400">
+            <svg class="w-12 h-12 mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p class="text-xs font-bold">Không có đề xuất chỉnh sửa nào đang chờ duyệt.</p>
           </div>
 
           <div *ngIf="!isLoadingSuggestions() && suggestions().length > 0" class="space-y-4">
-            <div 
-              *ngFor="let suggest of suggestions()" 
-              class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm space-y-4 transition-all duration-300 hover:border-slate-300"
-            >
-              <div class="flex justify-between items-start gap-4">
+            <div *ngFor="let sug of suggestions()" class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex flex-col gap-4">
+              <div class="flex justify-between items-start">
                 <div>
-                  <h4 class="text-xs font-black text-slate-800 leading-snug">
-                    Đề xuất cho: <span class="text-indigo-600">{{ suggest.place.name }}</span>
-                  </h4>
-                  <span class="text-[9px] text-slate-400 font-bold block mt-1">
-                    Gửi bởi: {{ suggest.user.fullName }} ({{ suggest.user.email }})
-                  </span>
-                  <span class="text-[9px] text-slate-400 font-bold block">
-                    Ngày gửi: {{ suggest.createdAt | date:'dd/MM/yyyy HH:mm' }}
-                  </span>
+                  <span class="text-[9px] font-black text-indigo-600 uppercase tracking-wide block mb-1">Đề xuất tại địa điểm:</span>
+                  <h4 class="font-extrabold text-slate-900 text-sm">{{ sug.place.name }}</h4>
+                  <p class="text-[10px] text-slate-400 font-bold">Người gửi: {{ sug.user.fullName }} ({{ sug.user.email }})</p>
                 </div>
-
-                <div>
-                  <span 
-                    class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border select-none"
-                    [ngClass]="{
-                      'bg-amber-50 border-amber-200 text-amber-600': suggest.status === 'PENDING',
-                      'bg-emerald-50 border-emerald-200 text-emerald-600': suggest.status === 'APPROVED',
-                      'bg-rose-50 border-rose-200 text-rose-600': suggest.status === 'REJECTED'
-                    }"
-                  >
-                    {{ suggest.status === 'PENDING' ? 'ĐANG CHỜ' : (suggest.status === 'APPROVED' ? 'ĐÃ DUYỆT' : 'ĐÃ TỪ CHỐI') }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Proposed changes fields -->
-              <div class="bg-slate-50/50 rounded-2xl border border-slate-100 p-4 space-y-2.5">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Dữ liệu đề xuất thay đổi</span>
-                
-                <div *ngFor="let field of getProposedFields(suggest.proposedData)" class="grid grid-cols-4 gap-2 text-[10.5px]">
-                  <span class="col-span-1 font-black text-slate-400 uppercase tracking-wider text-[9px]">{{ field.label }}:</span>
-                  <span class="col-span-3 text-slate-700 font-semibold leading-normal">{{ field.val }}</span>
-                </div>
-              </div>
-
-              <!-- Approve/Reject buttons -->
-              <div class="flex justify-end gap-2 border-t border-slate-100 pt-3" *ngIf="suggest.status === 'PENDING'">
-                <button 
-                  (click)="rejectSuggestion(suggest.id)"
-                  class="rounded-xl border border-rose-200 text-rose-700 bg-rose-55 hover:bg-rose-50 px-4 py-2 text-[10px] font-black uppercase tracking-wider transition active:scale-95 shadow-sm"
+                <span 
+                  class="px-2.5 py-1 rounded-full text-[9px] font-extrabold tracking-wide uppercase"
+                  [ngClass]="{
+                    'bg-amber-50 text-amber-700': sug.status === 'PENDING',
+                    'bg-emerald-50 text-emerald-700': sug.status === 'APPROVED',
+                    'bg-rose-50 text-rose-700': sug.status === 'REJECTED'
+                  }"
                 >
+                  {{ sug.status }}
+                </span>
+              </div>
+
+              <!-- Proposed changes list -->
+              <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-2">Thông tin thay đổi đề xuất:</span>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div *ngFor="let field of getProposedFields(sug.proposedData)" class="text-xs font-semibold text-slate-600 bg-white p-3 rounded-xl border border-slate-200/60">
+                    <span class="text-[9px] font-black text-slate-400 uppercase block mb-1">{{ field.label }}</span>
+                    <span>{{ field.val }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="sug.status === 'PENDING'" class="flex justify-end gap-2 border-t border-slate-100 pt-4">
+                <button (click)="rejectSuggestion(sug.id)" class="px-4 py-2 hover:bg-rose-50 border border-transparent hover:border-rose-100 text-rose-600 text-xs font-bold rounded-xl transition">
                   Từ chối
                 </button>
-                
-                <button 
-                  (click)="approveSuggestion(suggest.id)"
-                  class="rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-[10px] font-black uppercase tracking-wider transition active:scale-95 shadow"
-                >
+                <button (click)="approveSuggestion(sug.id)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition active:scale-95">
                   Phê duyệt & Áp dụng
                 </button>
               </div>
@@ -348,11 +323,357 @@
           <app-content-moderation></app-content-moderation>
         </div>
 
+        <!-- TAB 5: USER MANAGEMENT & VIOLATIONS -->
+        <div *ngIf="activeTab() === 'users'" class="space-y-6">
+          <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h3 class="text-base font-black text-slate-800">Quản lý Thành viên & Vi phạm</h3>
+              <p class="text-[10px] text-slate-400 font-bold">Theo dõi vi phạm, gửi cảnh báo và khóa tài khoản vi phạm chính sách</p>
+            </div>
+            
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+              <input 
+                type="text" 
+                placeholder="Tìm tên, email..." 
+                [ngModel]="userSearch()" 
+                (ngModelChange)="userSearch.set($event); searchUsers()"
+                class="px-4 py-2 text-xs border border-slate-200 rounded-xl focus:border-indigo-500 outline-none w-full md:w-48 shadow-inner"
+              />
+              <select 
+                [ngModel]="userStatusFilter()" 
+                (ngModelChange)="filterUsers($event)"
+                class="px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-indigo-500 outline-none bg-white font-semibold"
+              >
+                <option value="">Tất cả trạng thái</option>
+                <option value="ACTIVE">Hoạt động (ACTIVE)</option>
+                <option value="INACTIVE">Chưa kích hoạt (INACTIVE)</option>
+                <option value="BANNED">Đã bị khóa (BANNED)</option>
+              </select>
+            </div>
+          </div>
+
+          <div *ngIf="isLoadingUsers()" class="flex flex-col items-center py-20 bg-white rounded-[2.5rem] border border-slate-200/80">
+            <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mb-3"></div>
+            <p class="text-xs font-bold text-slate-400">Đang tải danh sách thành viên...</p>
+          </div>
+
+          <div *ngIf="!isLoadingUsers()" class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                    <th class="py-4 px-6">Người dùng</th>
+                    <th class="py-4 px-6">Cấp độ (Level)</th>
+                    <th class="py-4 px-6">Vi phạm / Báo cáo</th>
+                    <th class="py-4 px-6">Cảnh báo</th>
+                    <th class="py-4 px-6">Trạng thái</th>
+                    <th class="py-4 px-6">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs font-semibold text-slate-600">
+                  <tr *ngFor="let u of users()" class="hover:bg-slate-50/50 transition">
+                    <td class="py-4 px-6">
+                      <div class="flex items-center gap-3">
+                        <img [src]="u.avatarUrl || 'https://www.w3schools.com/howto/img_avatar.png'" class="h-9 w-9 rounded-full object-cover border border-slate-200" />
+                        <div>
+                          <span class="font-extrabold text-slate-900 block hover:underline cursor-pointer" (click)="viewUserDetail(u.id)">
+                            {{ u.fullName }}
+                          </span>
+                          <span class="text-[10px] text-slate-400 font-bold block">{{ u.email }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 px-6">
+                      <span class="font-extrabold text-slate-900">Level {{ u.userLevel }}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                      <span 
+                        *ngIf="u.reportCount > 0" 
+                        class="px-2 py-1 rounded-lg text-[9px] font-black bg-rose-50 text-rose-600 border border-rose-100"
+                      >
+                        🚨 {{ u.reportCount }} báo cáo
+                      </span>
+                      <span *ngIf="u.reportCount === 0" class="text-slate-400 font-normal">Chưa có báo cáo</span>
+                    </td>
+                    <td class="py-4 px-6">
+                      <span 
+                        *ngIf="u.warningCount > 0" 
+                        class="px-2 py-1 rounded-lg text-[9px] font-black bg-amber-50 text-amber-700 border border-amber-100"
+                      >
+                        ⚠️ {{ u.warningCount }} lần
+                      </span>
+                      <span *ngIf="u.warningCount === 0" class="text-slate-400 font-normal">Chưa bị cảnh cáo</span>
+                    </td>
+                    <td class="py-4 px-6">
+                      <span 
+                        class="px-2.5 py-1 rounded-full text-[9px] font-extrabold tracking-wide uppercase"
+                        [ngClass]="{
+                          'bg-emerald-50 text-emerald-700': u.status === 'ACTIVE',
+                          'bg-slate-50 text-slate-500': u.status === 'INACTIVE',
+                          'bg-rose-50 text-rose-700': u.status === 'BANNED'
+                        }"
+                      >
+                        {{ u.status }}
+                      </span>
+                    </td>
+                    <td class="py-4 px-6">
+                      <div class="flex items-center gap-1">
+                        <button (click)="viewUserDetail(u.id)" class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition">
+                          Chi tiết
+                        </button>
+                        <button (click)="openWarningModal(u.id)" class="px-2 py-1 text-[10px] font-bold text-amber-700 hover:bg-amber-50 rounded-lg transition">
+                          Cảnh báo
+                        </button>
+                        <button (click)="toggleBanUser(u)" class="px-2 py-1 text-[10px] font-bold rounded-lg transition" [ngClass]="u.status === 'BANNED' ? 'text-emerald-700 hover:bg-emerald-50' : 'text-rose-700 hover:bg-rose-50'">
+                          {{ u.status === 'BANNED' ? 'Mở khóa' : 'Khóa' }}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="px-6 py-4 flex justify-between items-center border-t border-slate-100">
+              <span class="text-[10px] text-slate-400 font-black uppercase">
+                Tổng cộng: {{ userTotal() }} thành viên
+              </span>
+              <div class="flex gap-1">
+                <button 
+                  [disabled]="userPage() <= 1" 
+                  (click)="changeUserPage(userPage() - 1)"
+                  class="px-3 py-1.5 border border-slate-200 rounded-xl text-xs hover:bg-slate-50 font-bold transition disabled:opacity-50"
+                >
+                  Trước
+                </button>
+                <button 
+                  [disabled]="userPage() * userLimit >= userTotal()" 
+                  (click)="changeUserPage(userPage() + 1)"
+                  class="px-3 py-1.5 border border-slate-200 rounded-xl text-xs hover:bg-slate-50 font-bold transition disabled:opacity-50"
+                >
+                  Sau
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- CRUD Form Modal Backdrop Overlay -->
+  <!-- USER DETAIL MODAL / SLIDE-OVER -->
+  <div *ngIf="selectedUser()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-end p-0">
+    <div class="bg-white h-full w-full max-w-xl shadow-2xl overflow-y-auto p-8 animate-slide-in flex flex-col justify-between font-sans">
+      <div>
+        <div class="flex justify-between items-start mb-6">
+          <div class="flex items-center gap-4">
+            <img [src]="selectedUser().avatarUrl || 'https://www.w3schools.com/howto/img_avatar.png'" class="h-16 w-16 rounded-full object-cover border-2 border-slate-100 shadow-sm" />
+            <div>
+              <h3 class="text-lg font-black text-slate-900 leading-tight">{{ selectedUser().fullName }}</h3>
+              <p class="text-xs text-slate-500 font-semibold mb-1">{{ selectedUser().email }}</p>
+              <div class="flex gap-1.5">
+                <span class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[9px] font-black rounded-lg uppercase">
+                  Level {{ selectedUser().userLevel }}
+                </span>
+                <span 
+                  class="px-2 py-0.5 text-[9px] font-black rounded-lg uppercase"
+                  [ngClass]="selectedUser().status === 'BANNED' ? 'bg-rose-50 border border-rose-100 text-rose-700' : 'bg-emerald-50 border border-emerald-100 text-emerald-700'"
+                >
+                  {{ selectedUser().status }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <button (click)="closeUserDetail()" class="text-slate-400 hover:text-slate-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Bio -->
+          <div *ngIf="selectedUser().bio">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">Mô tả bản thân (Bio):</span>
+            <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-100 italic">{{ selectedUser().bio }}</p>
+          </div>
+
+          <!-- Warnings Log -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Lịch sử cảnh cáo vi phạm:</span>
+              <button (click)="openWarningModal(selectedUser().id)" class="text-[10px] font-black text-amber-600 hover:underline">
+                + Thêm cảnh cáo mới
+              </button>
+            </div>
+            <div *ngIf="selectedUser().warnings?.length === 0" class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
+              Chưa có lịch sử vi phạm nào.
+            </div>
+            <div *ngIf="selectedUser().warnings?.length > 0" class="space-y-2">
+              <div *ngFor="let w of selectedUser().warnings" class="text-xs p-3 rounded-2xl border flex justify-between items-start" 
+                [ngClass]="{
+                  'bg-rose-50/50 border-rose-100 text-rose-800': w.severity === 'HIGH',
+                  'bg-amber-50/50 border-amber-100 text-amber-800': w.severity === 'MEDIUM',
+                  'bg-slate-50 border-slate-200 text-slate-700': w.severity === 'LOW'
+                }"
+              >
+                <div class="space-y-1">
+                  <p class="font-extrabold text-[10px] flex items-center gap-1">
+                    <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase" 
+                      [ngClass]="{
+                        'bg-rose-600 text-white': w.severity === 'HIGH',
+                        'bg-amber-500 text-white': w.severity === 'MEDIUM',
+                        'bg-slate-500 text-white': w.severity === 'LOW'
+                      }"
+                    >
+                      {{ w.severity }}
+                    </span>
+                    <span>Cảnh báo vi phạm chính sách</span>
+                  </p>
+                  <p class="font-medium text-xs">{{ w.message }}</p>
+                </div>
+                <span class="text-[8px] font-bold text-slate-400 whitespace-nowrap ml-2">
+                  {{ w.createdAt | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Content Moderation (Reviews & Posts) -->
+          <div class="space-y-4">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Nội dung đã đăng của người dùng:</span>
+
+            <!-- Reviews -->
+            <div>
+              <h4 class="text-xs font-black text-slate-800 mb-2">⭐ Đánh giá Địa điểm (Reviews):</h4>
+              <div *ngIf="selectedUser().reviews?.length === 0" class="text-xs text-slate-400 bg-slate-50/50 p-3 rounded-xl text-center italic">
+                Không tìm thấy đánh giá nào.
+              </div>
+              <div class="space-y-2">
+                <div *ngFor="let r of selectedUser().reviews" class="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex justify-between items-start gap-4">
+                  <div class="space-y-1">
+                    <p class="text-[10px] text-slate-400 font-bold">Địa điểm: <span class="text-slate-800 font-extrabold">{{ r.place.name }}</span></p>
+                    <p class="text-xs font-extrabold text-slate-800">⭐ {{ r.ratingOverall }}/5 | {{ r.title }}</p>
+                    <p class="text-xs font-medium text-slate-600 leading-relaxed">{{ r.content }}</p>
+                  </div>
+                  <button (click)="deleteViolatingReview(r.id)" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition self-start shadow-sm bg-white border border-slate-100" title="Xóa đánh giá này">
+                    🗑️ Xóa
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Posts -->
+            <div>
+              <h4 class="text-xs font-black text-slate-800 mb-2">📸 Bài đăng Mạng xã hội (Posts):</h4>
+              <div *ngIf="selectedUser().posts?.length === 0" class="text-xs text-slate-400 bg-slate-50/50 p-3 rounded-xl text-center italic">
+                Không tìm thấy bài đăng nào.
+              </div>
+              <div class="space-y-2">
+                <div *ngFor="let p of selectedUser().posts" class="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex justify-between items-start gap-4">
+                  <div class="space-y-2 w-full">
+                    <p class="text-xs font-medium text-slate-600 leading-relaxed">{{ p.content }}</p>
+                    <div class="flex gap-2 overflow-x-auto py-1">
+                      <img *ngFor="let img of p.images" [src]="img.url" class="h-16 w-16 rounded-xl object-cover border border-slate-200" />
+                    </div>
+                  </div>
+                  <button (click)="deleteViolatingPost(p.id)" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition self-start shadow-sm bg-white border border-slate-100" title="Xóa bài đăng này">
+                    🗑️ Xóa
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Footer -->
+      <div class="border-t border-slate-100 pt-6 mt-8 flex flex-wrap gap-2">
+        <button 
+          (click)="toggleBanUser(selectedUser())" 
+          class="flex-1 px-4 py-3 rounded-2xl text-xs font-black transition text-center"
+          [ngClass]="selectedUser().status === 'BANNED' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-rose-600 hover:bg-rose-700 text-white'"
+        >
+          {{ selectedUser().status === 'BANNED' ? '🔓 Mở khóa tài khoản' : '🔒 Khóa tài khoản (BAN)' }}
+        </button>
+        <button 
+          (click)="deleteUser(selectedUser())" 
+          class="px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white hover:text-rose-400 text-xs font-black rounded-2xl transition text-center"
+        >
+          🗑️ Xóa vĩnh viễn tài khoản
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEND WARNING MODAL -->
+  <div *ngIf="showWarningModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-[2rem] border border-slate-200 shadow-2xl max-w-md w-full p-8 animate-fade-in font-sans">
+      <div class="flex justify-between items-center mb-6">
+        <h4 class="text-sm font-black text-slate-800">Gửi cảnh cáo vi phạm chính sách</h4>
+        <button (click)="closeWarningModal()" class="text-slate-400 hover:text-slate-600 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Severity Selector -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-black text-slate-400 uppercase">Mức độ vi phạm:</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button 
+              *ngFor="let sev of severities" 
+              (click)="warningSeverity.set(sev)"
+              type="button" 
+              class="py-2.5 rounded-xl text-[10px] font-black border uppercase tracking-wider transition"
+              [ngClass]="{
+                'bg-slate-900 text-white border-slate-900 shadow-sm': warningSeverity() === sev,
+                'border-slate-200 text-slate-600 hover:bg-slate-50': warningSeverity() !== sev
+              }"
+            >
+              {{ sev }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Warn Message -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-black text-slate-400 uppercase">Lý do cảnh cáo:</label>
+          <textarea 
+            [ngModel]="warningText()" 
+            (ngModelChange)="warningText.set($event)"
+            rows="4" 
+            placeholder="Mô tả cụ thể hành vi vi phạm (ví dụ: Bình luận thô tục, Spam quảng cáo, Đăng ảnh không phù hợp...)"
+            class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner leading-relaxed"
+          ></textarea>
+        </div>
+
+        <div class="bg-rose-50 border border-rose-100 rounded-2xl p-4 text-[10px] text-rose-700 leading-normal font-medium">
+          💡 <strong>Chú ý:</strong> Nếu thành viên nhận đủ <strong>3 cảnh báo ở mức độ HIGH</strong>, tài khoản của họ sẽ tự động bị khóa (BANNED) vĩnh viễn khỏi hệ thống!
+        </div>
+
+        <div class="flex justify-end gap-2 border-t border-slate-100 pt-4 mt-6">
+          <button (click)="closeWarningModal()" class="rounded-xl border border-slate-200 hover:bg-slate-50 px-5 py-2.5 text-xs font-bold text-slate-600">
+            Hủy
+          </button>
+          <button 
+            [disabled]="!warningText().trim()" 
+            (click)="submitWarning()"
+            class="rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-6 py-2.5 transition shadow active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Gửi cảnh cáo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRUD Form Modal Backdrop Overlay (Places CRUD) -->
   <div *ngIf="showFormModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-[2rem] border border-slate-200 shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-8 animate-fade-in font-sans">
       
@@ -368,134 +689,116 @@
         </button>
       </div>
 
-      <form [formGroup]="placeForm" (ngSubmit)="submitPlaceForm()" class="space-y-4 text-xs font-semibold text-slate-700">
-        
-        <!-- Name Field -->
+      <form [formGroup]="placeForm" (ngSubmit)="submitPlaceForm()" class="space-y-4">
+        <!-- Tên địa điểm -->
         <div class="space-y-1">
-          <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Tên địa điểm *</label>
+          <label class="text-[10px] font-black text-slate-400 uppercase">Tên địa điểm:</label>
           <input 
             type="text" 
-            formControlName="name"
-            class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-            placeholder="Nhập tên địa điểm..."
+            formControlName="name" 
+            placeholder="Tên địa điểm du lịch..." 
+            class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner"
           />
         </div>
 
-        <!-- Description Field -->
+        <!-- Danh mục -->
         <div class="space-y-1">
-          <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Mô tả chi tiết</label>
+          <label class="text-[10px] font-black text-slate-400 uppercase">Danh mục:</label>
+          <select 
+            formControlName="category" 
+            class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none bg-white"
+          >
+            <option value="HOTEL">Khách sạn (HOTEL)</option>
+            <option value="RESTAURANT">Nhà hàng (RESTAURANT)</option>
+            <option value="ATTRACTION">Điểm tham quan (ATTRACTION)</option>
+          </select>
+        </div>
+
+        <!-- Địa chỉ -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-black text-slate-400 uppercase">Địa chỉ:</label>
+          <input 
+            type="text" 
+            formControlName="address" 
+            placeholder="Địa chỉ chi tiết..." 
+            class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner"
+          />
+        </div>
+
+        <!-- Mô tả -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-black text-slate-400 uppercase">Mô tả ngắn:</label>
           <textarea 
-            formControlName="description"
-            rows="2"
-            class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-medium"
-            placeholder="Mô tả tóm tắt về địa danh..."
+            formControlName="description" 
+            rows="3" 
+            placeholder="Mô tả về địa điểm này..."
+            class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner leading-relaxed"
           ></textarea>
         </div>
 
+        <!-- Kinh độ / Vĩ độ -->
         <div class="grid grid-cols-2 gap-4">
-          <!-- Category Selection -->
           <div class="space-y-1">
-            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Danh mục *</label>
-            <select 
-              formControlName="category"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold cursor-pointer"
-            >
-              <option value="ATTRACTION">ATTRACTION (Điểm tham quan)</option>
-              <option value="HOTEL">HOTEL (Khách sạn)</option>
-              <option value="RESTAURANT">RESTAURANT (Nhà hàng)</option>
-            </select>
-          </div>
-
-          <!-- Avatar Image Url -->
-          <div class="space-y-1">
-            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Ảnh đại diện URL</label>
+            <label class="text-[10px] font-black text-slate-400 uppercase">Vĩ độ (Latitude):</label>
             <input 
-              type="text" 
-              formControlName="avatarUrl"
-              class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-              placeholder="https://..."
+              type="number" 
+              step="0.000001" 
+              formControlName="latitude" 
+              class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner"
+            />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black text-slate-400 uppercase">Kinh độ (Longitude):</label>
+            <input 
+              type="number" 
+              step="0.000001" 
+              formControlName="longitude" 
+              class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner"
             />
           </div>
         </div>
 
-        <!-- Address Field -->
+        <!-- Giá tối thiểu / Giá tối đa -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="text-[10px] font-black text-slate-400 uppercase">Giá thấp nhất (VND):</label>
+            <input 
+              type="number" 
+              formControlName="priceMin" 
+              placeholder="VD: 500000"
+              class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner"
+            />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black text-slate-400 uppercase">Giá cao nhất (VND):</label>
+            <input 
+              type="number" 
+              formControlName="priceMax" 
+              placeholder="VD: 2000000"
+              class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner"
+            />
+          </div>
+        </div>
+
+        <!-- Tiện ích (Amenities) -->
         <div class="space-y-1">
-          <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Địa chỉ *</label>
+          <label class="text-[10px] font-black text-slate-400 uppercase">Tiện ích (Phân cách bằng dấu phẩy):</label>
           <input 
             type="text" 
-            formControlName="address"
-            class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-            placeholder="Nhập địa chỉ đầy đủ..."
+            formControlName="amenities" 
+            placeholder="VD: Wifi miễn phí, Hồ bơi, Máy lạnh, Chỗ đậu xe..."
+            class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner"
           />
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <!-- Latitude -->
-          <div class="space-y-1">
-            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Vĩ độ (Latitude) *</label>
-            <input 
-              type="number" 
-              step="0.000001"
-              formControlName="latitude"
-              class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-            />
-          </div>
-
-          <!-- Longitude -->
-          <div class="space-y-1">
-            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Kinh độ (Longitude) *</label>
-            <input 
-              type="number" 
-              step="0.000001"
-              formControlName="longitude"
-              class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-            />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3">
-          <!-- priceMin -->
-          <div class="space-y-1">
-            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Giá thấp nhất</label>
-            <input 
-              type="number" 
-              formControlName="priceMin"
-              class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-              placeholder="0"
-            />
-          </div>
-
-          <!-- priceMax -->
-          <div class="space-y-1">
-            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Giá cao nhất</label>
-            <input 
-              type="number" 
-              formControlName="priceMax"
-              class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-              placeholder="0"
-            />
-          </div>
-
-          <!-- priceRange string -->
-          <div class="space-y-1">
-            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Khoảng giá hiển thị</label>
-            <input 
-              type="text" 
-              formControlName="priceRange"
-              class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-              placeholder="Ví dụ: 100k - 500k"
-            />
-          </div>
-        </div>
-
-        <!-- Amenities (comma separated) -->
+        <!-- Ảnh đại diện -->
         <div class="space-y-1">
-          <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Danh sách tiện ích (phân tách bằng dấu phẩy)</label>
+          <label class="text-[10px] font-black text-slate-400 uppercase">Link ảnh đại diện:</label>
           <input 
             type="text" 
-            formControlName="amenities"
-            class="glow-input w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-indigo-400 focus:bg-white font-bold"
-            placeholder="wifi, pool, parking, bar, gym..."
+            formControlName="avatarUrl" 
+            placeholder="https://..."
+            class="w-full text-xs font-semibold p-4 border border-slate-200 focus:border-indigo-500 rounded-2xl outline-none shadow-inner"
           />
         </div>
 
