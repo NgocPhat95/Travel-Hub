@@ -1,13 +1,11 @@
-import { IsEmail, IsString, Matches } from 'class-validator';
+import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
-  @IsEmail({}, { message: 'Email is not valid.' })
+  @IsEmail({}, { message: 'Email không hợp lệ.' })
   email: string;
 
   @IsString()
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, {
-    message:
-      'Password must be at least 8 characters and include uppercase, lowercase, and a number.',
-  })
+  @MinLength(1, { message: 'Mật khẩu không được để trống.' })
   password: string;
 }
+

@@ -100,6 +100,13 @@ export class BookingService implements OnModuleInit {
       include: { place: true },
     });
 
+    const place = priceRecord?.place || await this.prisma.place.findUnique({ where: { id: placeId } });
+
+    // Nếu là Booking.com, chuyển hướng sang trang tìm kiếm chính xác theo tên địa điểm để tránh lỗi 404 (Không tìm thấy trang) do thay đổi slug URL
+    if (validPartner === 'BOOKING_COM' && place) {
+      return `https://www.booking.com/searchresults.vi.html?ss=${encodeURIComponent(place.name)}`;
+    }
+
     // Nếu có deepLink hợp lệ từ TripAdvisor hoặc nguồn khác, dùng trực tiếp
     if (priceRecord?.deepLink && priceRecord.deepLink.startsWith('https://')) {
       return priceRecord.deepLink;
@@ -111,20 +118,24 @@ export class BookingService implements OnModuleInit {
       include: { place: true },
     });
 
-    const place = (anyRecord as any)?.place || (priceRecord as any)?.place;
-    if (!place) {
+    const fallbackPlace = (anyRecord as any)?.place || place;
+    if (!fallbackPlace) {
       throw new NotFoundException('No link found for this place and partner.');
     }
 
+    if (validPartner === 'BOOKING_COM') {
+      return `https://www.booking.com/searchresults.vi.html?ss=${encodeURIComponent(fallbackPlace.name)}`;
+    }
+
     // Generate TripAdvisor search URL as fallback
-    const searchTerm = encodeURIComponent(place.name);
+    const searchTerm = encodeURIComponent(fallbackPlace.name);
     const categoryMap: Record<string, string> = {
       HOTEL: 'Hotels',
       RESTAURANT: 'Restaurants',
       ATTRACTION: 'Attractions',
       TOUR: 'Attractions',
     };
-    const category = categoryMap[place.category] || 'Hotels';
+    const category = categoryMap[fallbackPlace.category] || 'Hotels';
     return `https://www.tripadvisor.com.vn/Search?q=${searchTerm}&searchSessionId=tripadvisor&category=${category}`;
   }
 

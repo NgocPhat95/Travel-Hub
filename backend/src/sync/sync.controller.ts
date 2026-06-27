@@ -52,59 +52,46 @@ export class SyncController {
     };
   }
 
+  @Get('scrape-images')
+  async scrapeImages() {
+    const queries = ['Vietnam', 'Hanoi', 'Saigon', 'Da Nang', 'Phu Quoc', 'Nha Trang', 'Hoi An', 'Da Lat', 'Sapa'];
+    const allImages: string[] = [];
+    for (const q of queries) {
+      const imgs = await this.syncService.scrapeImages(q);
+      allImages.push(...imgs);
+      // Brief sleep between queries to avoid booking rate limit
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    const uniqueImages = [...new Set(allImages)];
+    return {
+      count: uniqueImages.length,
+      images: uniqueImages,
+    };
+  }
+
+
   @Get('check-booking')
   async checkBooking() {
-    const key = process.env.RAPIDAPI_KEY || '';
-    const host = 'booking-com15.p.rapidapi.com';
-    const results: any[] = [];
-    
     try {
-      const res = await this.syncService.bookingComService.searchLocationId('Sapa');
-      results.push({ test: 'searchLocationId Sapa', destId: res });
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = 'C:\\Users\\ASUS\\.gemini\\antigravity\\brain\\dc0216ba-90bf-49a0-84c4-04290281e4b4\\.system_generated\\steps\\6312\\content.md';
+      if (!fs.existsSync(filePath)) {
+        return { error: 'File not found at: ' + filePath };
+      }
+      const content = fs.readFileSync(filePath, 'utf8');
+      
+      // Match raw image URLs (with max resolution or other dimensions)
+      const regex = /https:\/\/cf\.bstatic\.com\/xdata\/images\/hotel\/[^\s"'>]+/g;
+      const matches = content.match(regex) || [];
+      const unique = [...new Set(matches)].map((url: string) => url.replace(/&amp;/g, '&'));
+      return {
+        count: unique.length,
+        images: unique.slice(0, 100),
+      };
     } catch (e: any) {
-      results.push({ test: 'searchLocationId Sapa', error: e.message });
+      return { error: e.message };
     }
-
-    try {
-      const url = `https://${host}/api/v1/hotels/searchDestination`;
-      const res = await this.syncService.bookingComService['httpService'].axiosRef.get(url, {
-        headers: {
-          'X-RapidAPI-Key': key,
-          'X-RapidAPI-Host': host,
-        },
-        params: { query: 'Sapa', languagecode: 'vi' }
-      });
-      results.push({ test: 'raw searchDestination', status: res.status, data: res.data });
-    } catch (e: any) {
-      results.push({ 
-        test: 'raw searchDestination', 
-        error: e.message, 
-        status: e.response?.status, 
-        data: e.response?.data 
-      });
-    }
-
-    try {
-      const taKey = key;
-      const taHost = 'tripadvisor16.p.rapidapi.com';
-      const url = `https://${taHost}/api/v1/restaurant/searchRestaurants`;
-      const res = await this.syncService.bookingComService['httpService'].axiosRef.get(url, {
-        headers: {
-          'X-RapidAPI-Key': taKey,
-          'X-RapidAPI-Host': taHost,
-        },
-        params: { locationId: '293924' }
-      });
-      results.push({ test: 'raw TripAdvisor rest', status: res.status, data: res.data });
-    } catch (e: any) {
-      results.push({ 
-        test: 'raw TripAdvisor rest', 
-        error: e.message, 
-        status: e.response?.status, 
-        data: e.response?.data 
-      });
-    }
-
-    return results;
   }
 }
+

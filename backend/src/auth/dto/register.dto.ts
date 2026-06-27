@@ -1,17 +1,17 @@
 import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
 
 export class RegisterDto {
-  @IsEmail({}, { message: 'Email is not valid.' })
+  @IsEmail({}, { message: 'Email không đúng định dạng.' })
   email: string;
 
   @IsString()
-  @MinLength(2, { message: 'Full name must be at least 2 characters.' })
+  @MinLength(2, { message: 'Họ và tên phải có ít nhất 2 ký tự.' })
   fullName: string;
 
   @IsString()
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, {
-    message:
-      'Password must be at least 8 characters and include uppercase, lowercase, and a number.',
+    message: 'Mật khẩu phải có ít nhất 8 ký tự, gồm chữ HOA, chữ thường và số.',
   })
   password: string;
 }
+

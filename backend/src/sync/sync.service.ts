@@ -346,4 +346,33 @@ export class DataSyncService {
       results: this.lastResults,
     };
   }
+
+  async scrapeImages(query: string = 'Vietnam'): Promise<string[]> {
+    try {
+      const url = 'https://www.booking.com/searchresults.vi.html';
+      const response = await this.bookingComService['httpService'].axiosRef.get(url, {
+        params: { ss: query },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'vi,en-US;q=0.7,en;q=0.3',
+        }
+      });
+
+      const html = response.data;
+      const regex = /https:\/\/cf\.bstatic\.com\/xdata\/images\/hotel\/[^\s"'>]+/g;
+      const matches = html.match(regex) || [];
+      const unique = [...new Set(matches)].map((link: string) => {
+        // Clean up HTML entities if any
+        return link.replace(/&amp;/g, '&');
+      });
+
+      this.logger.log(`[Scraper] Found ${unique.length} unique Booking.com images for query "${query}"`);
+      return unique;
+    } catch (e: any) {
+      this.logger.error(`[Scraper] Failed to scrape Booking.com images: ${e.message}`);
+      return [];
+    }
+  }
 }
+

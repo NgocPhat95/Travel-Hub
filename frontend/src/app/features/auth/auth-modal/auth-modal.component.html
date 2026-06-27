@@ -27,7 +27,7 @@
       </p>
     </div>
 
-    <!-- Google Authentication Option (Top Position - TripAdvisor Style) -->
+    <!-- Google Authentication Option -->
     @if (!isForgotMode()) {
       <button
         type="button"
@@ -36,25 +36,13 @@
       >
         <span class="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm">
           <svg viewBox="0 0 48 48" class="h-4 w-4">
-            <path
-              fill="#EA4335"
-              d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.9-6.9C36.2 2.3 30.5 0 24 0 14.6 0 6.5 5.4 2.6 13.2l8.1 6.3C12.5 13.1 17.8 9.5 24 9.5z"
-            />
-            <path
-              fill="#34A853"
-              d="M46.5 24.5c0-1.7-.2-3.4-.5-5H24v9.5h12.6c-.6 3-2.3 5.6-4.7 7.4l7.3 5.7c4.3-4 7.3-9.9 7.3-17.6z"
-            />
-            <path
-              fill="#4A90E2"
-              d="M10.7 28.5a14.5 14.5 0 0 1 0-9l-8.1-6.3C.9 16.2 0 20 0 24s.9 7.8 2.6 10.8l8.1-6.3z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M24 48c6.5 0 12.2-2.1 16.3-5.7l-7.3-5.7c-2 1.4-4.6 2.2-9 2.2-6.2 0-11.5-3.6-13.3-8.8l-8.1 6.3C6.5 42.6 14.6 48 24 48z"
-            />
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.2 3.6l6.9-6.9C36.2 2.3 30.5 0 24 0 14.6 0 6.5 5.4 2.6 13.2l8.1 6.3C12.5 13.1 17.8 9.5 24 9.5z"/>
+            <path fill="#34A853" d="M46.5 24.5c0-1.7-.2-3.4-.5-5H24v9.5h12.6c-.6 3-2.3 5.6-4.7 7.4l7.3 5.7c4.3-4 7.3-9.9 7.3-17.6z"/>
+            <path fill="#4A90E2" d="M10.7 28.5a14.5 14.5 0 0 1 0-9l-8.1-6.3C.9 16.2 0 20 0 24s.9 7.8 2.6 10.8l8.1-6.3z"/>
+            <path fill="#FBBC05" d="M24 48c6.5 0 12.2-2.1 16.3-5.7l-7.3-5.7c-2 1.4-4.6 2.2-9 2.2-6.2 0-11.5-3.6-13.3-8.8l-8.1 6.3C6.5 42.6 14.6 48 24 48z"/>
           </svg>
         </span>
-        Đăng nhập với Google
+        Tiếp tục với Google
       </button>
 
       <div class="relative mb-6 flex items-center justify-center">
@@ -63,71 +51,98 @@
       </div>
     }
 
-    <form class="relative space-y-5" (ngSubmit)="submit()" [formGroup]="form">
-      <!-- Full Name (Register Only) -->
+    <form class="relative space-y-4" (ngSubmit)="submit()" [formGroup]="form">
+
+      <!-- Họ và tên (chỉ khi đăng ký) -->
       @if (isRegisterMode()) {
-        <div class="space-y-2">
+        <div class="space-y-1">
           <label class="text-sm font-semibold text-slate-700">Họ và tên</label>
           <input
             type="text"
             formControlName="fullName"
             class="glow-input w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm shadow-inner outline-none placeholder-slate-400 focus:border-cyan-300"
+            [class.border-rose-400]="getFieldError('fullName')"
             placeholder="Nguyễn Văn A"
           />
+          @if (getFieldError('fullName')) {
+            <p class="text-xs font-medium text-rose-500 mt-1 pl-1">{{ getFieldError('fullName') }}</p>
+          }
         </div>
       }
 
-      <!-- Email (All Modes) -->
-      <div class="space-y-2">
+      <!-- Email -->
+      <div class="space-y-1">
         <label class="text-sm font-semibold text-slate-700">Email</label>
         <input
           type="email"
           formControlName="email"
           class="glow-input w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm shadow-inner outline-none placeholder-slate-400 focus:border-cyan-300"
+          [class.border-rose-400]="getFieldError('email')"
           placeholder="username@gmail.com"
         />
+        @if (getFieldError('email')) {
+          <p class="text-xs font-medium text-rose-500 mt-1 pl-1">{{ getFieldError('email') }}</p>
+        }
       </div>
 
-      <!-- Password (Login & Register Only) -->
+      <!-- Mật khẩu (đăng nhập & đăng ký) -->
       @if (!isForgotMode()) {
-        <div class="space-y-2">
+        <div class="space-y-1">
           <label class="text-sm font-semibold text-slate-700">Mật khẩu</label>
           <input
             type="password"
             formControlName="password"
             class="glow-input w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm shadow-inner outline-none placeholder-slate-400 focus:border-cyan-300"
+            [class.border-rose-400]="getFieldError('password')"
             placeholder="••••••••"
           />
+          @if (getFieldError('password')) {
+            <p class="text-xs font-medium text-rose-500 mt-1 pl-1">{{ getFieldError('password') }}</p>
+          }
+          @if (isRegisterMode() && !getFieldError('password')) {
+            <p class="text-xs text-slate-400 mt-1 pl-1">
+              💡 Ít nhất 8 ký tự, có chữ HOA (A-Z), chữ thường (a-z) và số (0-9)
+            </p>
+          }
         </div>
       }
 
-      <!-- Messages -->
+      <!-- Thông báo lỗi từ server -->
       @if (errorMessage()) {
-        <p class="text-sm font-medium text-rose-600 transition-all duration-300">
-          {{ errorMessage() }}
-        </p>
+        <div class="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3">
+          <p class="text-sm font-medium text-rose-600">{{ errorMessage() }}</p>
+        </div>
       }
+
+      <!-- Thông báo thành công -->
       @if (successMessage()) {
-        <p class="text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl p-3 transition-all duration-300">
-          {{ successMessage() }}
-        </p>
+        <div class="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
+          <p class="text-sm font-medium text-emerald-700">{{ successMessage() }}</p>
+        </div>
       }
 
       <button
         type="submit"
-        class="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(15,23,42,0.35)] disabled:opacity-50"
+        class="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(15,23,42,0.35)] disabled:opacity-50 disabled:cursor-not-allowed"
         [disabled]="isSubmitting()"
       >
-        <span>
-          @if (isSubmitting()) { Đang xử lý... }
-          @else if (isLoginMode()) { Đăng nhập }
-          @else if (isRegisterMode()) { Đăng ký }
-          @else { Gửi yêu cầu }
-        </span>
+        @if (isSubmitting()) {
+          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          Đang xử lý...
+        } @else if (isLoginMode()) {
+          Đăng nhập
+        } @else if (isRegisterMode()) {
+          Đăng ký tài khoản
+        } @else {
+          Gửi liên kết khôi phục
+        }
       </button>
     </form>
 
-    <!-- Link Toggles -->
+    <!-- Link chuyển chế độ -->
     <div class="mt-6 flex flex-col items-center gap-3 text-sm">
       @if (isLoginMode()) {
         <button type="button" class="font-semibold text-slate-800 hover:underline" (click)="setMode('register')">
@@ -149,4 +164,3 @@
     </div>
   </div>
 </div>
-
